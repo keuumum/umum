@@ -106,72 +106,88 @@
       '<g fill="url(#leaf)" stroke="#1f5226" stroke-width=".5">' + daun.map(d => '<path d="' + d + '"/>').join('') + '</g></g>';
   }
   function gedungSVG(W) {
+    // proporsi mengikuti foto: atap rendah, lantai 2 & lantai 1 sama tinggi, papan nama di tengah tinggi gedung
     const cx = W / 2, hw = Math.min(W / 2 - 6, 700), x0 = cx - hw, x1 = cx + hw;
     const R = (x, y, w, h, f, ex) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + f + '"' + (ex || '') + '/>';
     const atap = pts => ['url(#roofG)', 'url(#tile)', 'url(#roofS)'].map(f => '<polygon points="' + pts + '" fill="' + f + '"/>').join('');
-    // posisi jendela di sayap kiri & kanan (lebar per petak 66)
     // jumlah jendela tetap seperti gedung aslinya (maks. 3 per sayap); di layar lebar jendela & jaraknya yang melebar
-    const petak = (a, b) => { const n = Math.max(1, Math.min(3, Math.floor((b - a) / 66))), w = (b - a) / n; return Array.from({ length: n }, (_, i) => a + w * i + w / 2); };
-    const bay = (cx - 62 - (x0 + 12)) / Math.max(1, Math.min(3, Math.floor((cx - 62 - (x0 + 12)) / 66)));
-    const jw = Math.min(Math.max(44, bay * .62), 120), jw1 = Math.min(Math.max(50, bay * .66), 130);
-    const kiri = petak(x0 + 12, cx - 62), kanan = petak(cx + 62, x1 - 12), semua = kiri.concat(kanan);
+    const nBay = Math.max(1, Math.min(3, Math.floor((cx - 66 - (x0 + 12)) / 66))), bay = (cx - 66 - (x0 + 12)) / nBay;
+    const petak = (a, b) => Array.from({ length: nBay }, (_, i) => a + (b - a) / nBay * (i + .5));
+    const kiri = petak(x0 + 12, cx - 66), kanan = petak(cx + 66, x1 - 12), semua = kiri.concat(kanan);
+    const jw = Math.min(Math.max(44, bay * .62), 120), jw1 = Math.min(Math.max(50, bay * .7), 130);
     const jendela = (xc, y, w, h, f) => R(xc - w / 2, y, w, h, f) + R(xc - w / 2 + 2.5, y + 2.5, w - 5, h - 5, 'url(#glass)') +
-      '<path d="M' + (xc - w / 6) + ' ' + (y + 2) + 'v' + (h - 4) + 'M' + (xc + w / 6) + ' ' + (y + 2) + 'v' + (h - 4) + 'M' + (xc - w / 2 + 2) + ' ' + (y + h * .35) + 'h' + (w - 4) + '" stroke="' + f + '" stroke-width="1.6"/>';
+      '<path d="M' + (xc - w / 6) + ' ' + (y + 2) + 'v' + (h - 4) + 'M' + (xc + w / 6) + ' ' + (y + 2) + 'v' + (h - 4) + 'M' + (xc - w / 2 + 2) + ' ' + (y + h * .32) + 'h' + (w - 4) + '" stroke="' + f + '" stroke-width="1.6"/>';
     let s = '';
     // pepohonan di belakang gedung
-    s += '<g fill="#2f6b35"><ellipse cx="' + (x0 + 4) + '" cy="120" rx="34" ry="62"/><ellipse cx="' + (x1 - 4) + '" cy="118" rx="36" ry="64"/></g>' +
-      '<g fill="#3f8443"><ellipse cx="' + (x0 + 30) + '" cy="150" rx="26" ry="40"/><ellipse cx="' + (x1 - 30) + '" cy="150" rx="26" ry="40"/></g>';
-    // atap utama (perisai)
-    s += atap((x0 - 6) + ',98 ' + (x1 + 6) + ',98 ' + (x1 - 66) + ',32 ' + (x0 + 66) + ',32');
-    s += '<path d="M' + (x0 + 66) + ' 32H' + (x1 - 66) + 'M' + (x0 + 66) + ' 32L' + (x0 - 6) + ' 98M' + (x1 - 66) + ' 32L' + (x1 + 6) + ' 98" stroke="#3e1f22" stroke-width="2.2" stroke-linecap="round"/>';
-    s += R(x0 - 8, 96, x1 - x0 + 16, 4, '#3f2a28');
+    s += '<g fill="#2f6b35"><ellipse cx="' + (x0 + 2) + '" cy="130" rx="34" ry="80"/><ellipse cx="' + (x1 - 2) + '" cy="128" rx="36" ry="82"/></g>' +
+      '<g fill="#3f8443"><ellipse cx="' + (x0 + 26) + '" cy="168" rx="26" ry="46"/><ellipse cx="' + (x1 - 26) + '" cy="168" rx="26" ry="46"/></g>';
+    // atap utama (rendah, seperti foto)
+    s += atap((x0 - 10) + ',62 ' + (x1 + 10) + ',62 ' + (x1 - 60) + ',30 ' + (x0 + 60) + ',30');
+    s += '<path d="M' + (x0 + 60) + ' 30H' + (x1 - 60) + 'M' + (x0 + 60) + ' 30L' + (x0 - 10) + ' 62M' + (x1 - 60) + ' 30L' + (x1 + 10) + ' 62" stroke="#3e1f22" stroke-width="2" stroke-linecap="round"/>';
+    s += R(x0 - 12, 61, x1 - x0 + 24, 4, '#3f2a28');
+    // lis / plafon teritis
+    s += R(x0 - 4, 65, x1 - x0 + 8, 9, '#e9e4d2') + R(x0 - 4, 72, x1 - x0 + 8, 2, '#c9c6b6');
     // lantai 2
-    s += R(x0, 100, x1 - x0, 50, 'url(#wall)') + R(x0 - 2, 100, x1 - x0 + 4, 6, '#c9ceca') + R(x0, 146, x1 - x0, 4, '#c9ceca');
-    s += [x0, cx - 62, cx + 56, x1 - 6].map(x => R(x, 106, 6, 40, '#d3d6cf')).join('');
-    semua.forEach(xc => { s += jendela(xc, 110, jw, 30, '#4b3427'); });
-    // ornamen belah ketupat di antara jendela
-    s += '<g fill="none" stroke="#b9bdb2" stroke-width="1.1">' + semua.slice(0, -1).filter((x, i) => semua[i + 1] - x < bay * 1.5).map((x, i) => {
-      const m = (x + semua[semua.indexOf(x) + 1]) / 2; return '<path d="M' + (m - 5) + ' 125l5 -5l5 5l-5 5z"/>';
+    s += R(x0, 74, x1 - x0, 52, 'url(#wall)') + R(x0 - 2, 74, x1 - x0 + 4, 5, '#cfd2cb');
+    s += [x0, cx - 66, cx + 60, x1 - 6].map(x => R(x, 79, 6, 47, '#d6d8d0')).join('');
+    semua.forEach(xc => { s += jendela(xc, 86, jw, 32, '#4b3427'); });
+    s += '<g fill="none" stroke="#b5b8ad" stroke-width="1.1">' + semua.map((x, i) => {
+      const nx = semua[i + 1]; if (nx == null || nx - x > bay * 1.5) return '';
+      const m = (x + nx) / 2; return '<path d="M' + (m - 5) + ' 96l5 -5l5 5l-5 5z"/>';
     }).join('') + '</g>';
-    // atap keliling lantai 1
-    s += atap((x0 - 12) + ',172 ' + (x1 + 12) + ',172 ' + (x1 + 2) + ',150 ' + (x0 - 2) + ',150');
-    s += R(x0 - 14, 170, x1 - x0 + 28, 3, '#3f2a28');
-    // lantai 1
-    s += R(x0 + 4, 173, x1 - x0 - 8, 33, 'url(#wall)');
-    semua.forEach((xc, i) => { s += jendela(xc, 178, jw1, 24, '#4b3427'); if (i % 2) s += R(xc - 9, 200, 18, 9, '#eef0f1', ' stroke="#aab3b8" stroke-width=".6"') + '<circle cx="' + (xc - 2) + '" cy="204.5" r="2.6" fill="none" stroke="#8e989e" stroke-width=".7"/>'; });
-    // gapura lengkung khas Sasak + logo PLN
-    const arc = (w, top) => 'M' + (cx - w) + ' 174 C' + (cx - w) + ' 112 ' + (cx - w * .58) + ' ' + (top + 18) + ' ' + cx + ' ' + top + ' C' + (cx + w * .58) + ' ' + (top + 18) + ' ' + (cx + w) + ' 112 ' + (cx + w) + ' 174 Z';
-    s += '<path d="' + arc(52, 42) + '" fill="#7a4043"/><path d="' + arc(52, 42) + '" fill="url(#tile)"/>';
-    s += '<path d="' + arc(46, 53) + '" fill="#4e3134"/>';
-    s += '<clipPath id="archIn"><path d="' + arc(39, 65) + '"/></clipPath><path d="' + arc(39, 65) + '" fill="url(#wall)"/>';
-    s += '<g clip-path="url(#archIn)" stroke="#d3c9a8" stroke-width=".7">' + Array.from({ length: 18 }, (_, i) => '<path d="M' + (cx - 40) + ' ' + (70 + i * 6) + 'h80"/>').join('') + '</g>';
-    s += R(cx - 15, 82, 30, 30, '#ffd400', ' stroke="#d9b400"');
-    s += '<g fill="none" stroke="#1b82cc" stroke-width="1.8" stroke-linecap="round">' + [97.5, 102.5, 107.5].map(y => '<path d="M' + (cx - 12) + ' ' + y + ' q3 -2.6 6 0 t6 0 t6 0 t6 0"/>').join('') + '</g>';
-    s += '<polygon points="' + [[3, 85], [-6, 99], [0, 99], [-5, 111], [7, 95], [1, 95], [5, 85]].map(p => (cx + p[0]) + ',' + p[1]).join(' ') + '" fill="#e02525"/>';
-    s += '<text x="' + cx + '" y="134" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="16" letter-spacing="3" fill="#1b82cc">PLN</text>';
-    // atap teras + papan nama
-    s += atap((cx - 84) + ',178 ' + (cx + 84) + ',178 ' + (cx + 62) + ',154 ' + (cx - 62) + ',154');
-    s += R(cx - 76, 176, 120, 22, 'url(#sign)') + R(cx + 44, 175, 30, 25, '#fff');
-    s += '<text x="' + (cx - 16) + '" y="185" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="6.6" fill="#fff">UNIT PELAKSANA</text>';
-    s += '<text x="' + (cx - 16) + '" y="194" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="6.6" fill="#fff">PEMBANGKITAN LOMBOK</text>';
-    s += R(cx + 52, 177, 14, 13, '#ffd400') + '<polygon points="' + [[60, 178], [55, 184], [58, 184], [56, 189], [62, 183], [59, 183], [62, 178]].map(p => (cx + p[0]) + ',' + p[1]).join(' ') + '" fill="#e02525"/>';
-    s += '<text x="' + (cx + 59) + '" y="197.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="5" fill="#1b82cc">PLN</text>';
+    // atap keliling di antara lantai 2 & lantai 1
+    s += atap((x0 - 14) + ',146 ' + (x1 + 14) + ',146 ' + (x1 + 2) + ',124 ' + (x0 - 2) + ',124');
+    s += R(x0 - 16, 145, x1 - x0 + 32, 3, '#3f2a28');
+    // lantai 1 (setinggi lantai 2)
+    s += R(x0 + 4, 148, x1 - x0 - 8, 64, 'url(#wall)') + R(x0 + 4, 148, x1 - x0 - 8, 4, '#cfd2cb') + R(x0 + 4, 206, x1 - x0 - 8, 6, '#9ea3a0');
+    s += [x0 + 4, cx - 72, cx + 66, x1 - 10].map(x => R(x, 152, 6, 54, '#d6d8d0')).join('');
+    semua.forEach((xc, i) => {
+      s += jendela(xc, 160, jw1, 34, '#4b3427');
+      s += R(xc - jw1 / 2 + 2, 197, 16, 8, '#eef0f1', ' stroke="#aab3b8" stroke-width=".6"') + '<circle cx="' + (xc - jw1 / 2 + 8) + '" cy="201" r="2.6" fill="none" stroke="#8e989e" stroke-width=".7"/>';
+    });
+    // gapura lengkung khas Sasak + logo PLN (di lantai 2, menembus atap)
+    const arc = (w, top, base) => 'M' + (cx - w) + ' ' + base + ' C' + (cx - w) + ' ' + (top + 30) + ' ' + (cx - w * .55) + ' ' + (top + 6) + ' ' + cx + ' ' + top +
+      ' C' + (cx + w * .55) + ' ' + (top + 6) + ' ' + (cx + w) + ' ' + (top + 30) + ' ' + (cx + w) + ' ' + base + ' Z';
+    s += '<path d="' + arc(54, 16, 122) + '" fill="#4e3134"/>';
+    s += '<path d="' + arc(47, 24, 122) + '" fill="#6b4247"/>';
+    s += '<clipPath id="archIn"><path d="' + arc(41, 31, 122) + '"/></clipPath><path d="' + arc(41, 31, 122) + '" fill="url(#wall)"/>';
+    s += '<g clip-path="url(#archIn)" stroke="#d3c9a8" stroke-width=".7">' + Array.from({ length: 16 }, (_, i) => '<path d="M' + (cx - 42) + ' ' + (36 + i * 6) + 'h84"/>').join('') + '</g>';
+    s += R(cx - 16, 46, 32, 32, '#ffd400', ' stroke="#d9b400"');
+    s += '<g fill="none" stroke="#1b82cc" stroke-width="1.9" stroke-linecap="round">' + [63, 68, 73].map(y => '<path d="M' + (cx - 13) + ' ' + y + ' q3.25 -2.7 6.5 0 t6.5 0 t6.5 0 t6.5 0"/>').join('') + '</g>';
+    s += '<polygon points="' + [[3, 49], [-6, 64], [0, 64], [-5, 76], [7, 60], [1, 60], [5, 49]].map(p => (cx + p[0]) + ',' + p[1]).join(' ') + '" fill="#e02525"/>';
+    s += R(cx - 26, 82, 52, 4, '#b9c7d8') + '<text x="' + cx + '" y="101" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="16" letter-spacing="3" fill="#1b82cc">PLN</text>';
+    // atap teras di bawah gapura
+    s += atap((cx - 86) + ',132 ' + (cx + 86) + ',132 ' + (cx + 66) + ',112 ' + (cx - 66) + ',112');
+    s += R(cx - 88, 131, 176, 2.5, '#3f2a28');
+    // papan nama (di tengah tinggi gedung) + tiang teras
+    s += R(cx - 64, 134, 98, 28, 'url(#sign)') + R(cx + 34, 134, 30, 28, '#fff', ' stroke="#d8dde2" stroke-width=".6"');
+    s += '<text x="' + (cx - 15) + '" y="146" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="6.6" fill="#fff">UNIT PELAKSANA</text>';
+    s += '<text x="' + (cx - 15) + '" y="156" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="6.6" fill="#fff">PEMBANGKITAN LOMBOK</text>';
+    s += R(cx + 42, 137, 14, 13, '#ffd400') + '<polygon points="' + [[50, 138], [45, 144], [48, 144], [46, 149], [52, 143], [49, 143], [52, 138]].map(p => (cx + p[0]) + ',' + p[1]).join(' ') + '" fill="#e02525"/>';
+    s += '<text x="' + (cx + 49) + '" y="158.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="5.5" fill="#1b82cc">PLN</text>';
+    s += R(cx - 48, 162, 7, 50, '#c9cdca') + R(cx + 41, 162, 7, 50, '#c9cdca') + R(cx - 50, 206, 11, 6, '#9ea3a0') + R(cx + 39, 206, 11, 6, '#9ea3a0');
     // pintu masuk kaca + anak tangga
-    s += R(cx - 30, 198, 60, 10, '#1d2a31') + '<path d="M' + (cx - 15) + ' 198v10M' + cx + ' 198v10M' + (cx + 15) + ' 198v10" stroke="#53646c" stroke-width="1"/>' + R(cx - 40, 206, 80, 4, '#c3c6c2');
+    s += R(cx - 38, 164, 76, 42, '#3a2c25') + R(cx - 34, 167, 68, 39, '#1b252b') +
+      '<path d="M' + (cx - 17) + ' 167v39M' + cx + ' 167v39M' + (cx + 17) + ' 167v39M' + (cx - 34) + ' 176h68" stroke="#4a5a62" stroke-width="1"/>';
+    s += R(cx - 46, 206, 92, 3, '#d2d4cf') + R(cx - 50, 209, 100, 3, '#bfc2bd');
     // tiang lampu taman
-    [cx - 66, cx + 66].forEach(x => { s += R(x - 1.5, 182, 3, 30, '#eef0ee') + R(x - 3, 208, 6, 5, '#4b5257') + '<ellipse cx="' + x + '" cy="179" rx="4" ry="5" fill="#fff" stroke="#c7ccc9"/>' + R(x - 4.5, 173, 9, 2.5, '#d8dcd9'); });
+    [cx - 70, cx + 70].forEach(x => { s += R(x - 1.5, 160, 3, 52, '#f2f3f0') + R(x - 3.5, 207, 7, 6, '#4b5257') + '<ellipse cx="' + x + '" cy="156" rx="4" ry="5.5" fill="#fff" stroke="#c7ccc9"/>' + R(x - 4.5, 150, 9, 2.5, '#d8dcd9'); });
     // taman: rumput, perdu berbunga, kanstin kuning-putih
-    s += R(-60, 208, W + 120, 10, '#5aa046') + R(-60, 208, W + 120, 3, '#4a8c3a');
-    s += '<g>' + Array.from({ length: Math.ceil((x1 - x0) / 26) + 2 }, (_, i) => { const x = x0 - 20 + i * 26; if (Math.abs(x - cx) < 46) return ''; return '<ellipse cx="' + x + '" cy="210" rx="11" ry="6" fill="#2f6b35"/>' + (i % 3 ? '' : '<g fill="#c63a55"><circle cx="' + (x - 4) + '" cy="208" r="1.6"/><circle cx="' + (x + 2) + '" cy="207" r="1.6"/><circle cx="' + (x + 5) + '" cy="210" r="1.4"/></g>'); }).join('') + '</g>';
-    s += R(-60, 217, W + 120, 3, '#ffffff') + R(-60, 217, W + 120, 3, 'url(#curbY)');
+    s += R(-60, 212, W + 120, 12, '#5aa046') + R(-60, 212, W + 120, 3, '#4a8c3a');
+    s += '<g>' + Array.from({ length: Math.ceil((x1 - x0) / 26) + 2 }, (_, i) => { const x = x0 - 20 + i * 26; if (Math.abs(x - cx) < 52) return ''; return '<ellipse cx="' + x + '" cy="213" rx="11" ry="6" fill="#2f6b35"/>' + (i % 3 ? '' : '<g fill="#c63a55"><circle cx="' + (x - 4) + '" cy="211" r="1.6"/><circle cx="' + (x + 2) + '" cy="210" r="1.6"/><circle cx="' + (x + 5) + '" cy="213" r="1.4"/></g>'); }).join('') + '</g>';
+    s += R(-60, 220, W + 120, 3, '#ffffff') + R(-60, 220, W + 120, 3, 'url(#curbY)');
     // pohon kelapa (depan gedung & sudut)
-    s += palem(cx - 112, 214, 58, -14, 1) + palem(cx + 120, 214, 66, 16, 1.05) + palem(x0 + 26, 214, 120, 10, 1.25) + palem(x1 - 24, 214, 128, -12, 1.3);
-    // halaman paving terang
-    s += R(-60, 220, W + 120, 180, 'url(#pave)') + R(-60, 220, W + 120, 180, 'url(#bata)');
+    s += palem(cx - 118, 218, 74, -12, 1) + palem(cx + 126, 218, 86, 14, 1.05) + palem(x0 + 24, 218, 120, 10, 1.3) + palem(x1 - 22, 218, 130, -12, 1.35);
     return s;
   }
   let gedungW = 0;
-  function gambarGedung() { if (gedungW === HW) return; gedungW = HW; $('gedung').innerHTML = gedungSVG(HW); $('hSvg').style.setProperty('--hw', HW + 60); }
+  // gedung memenuhi adegan dari lantai (bawah) sampai atap, tanpa halaman/jalan
+  function gambarGedung() {
+    if (gedungW === HW) return; gedungW = HW;
+    const sk = 1.78, gw = Math.max(HW / sk, 400), tx = (HW - gw * sk) / 2, ty = 400 - 223 * sk;
+    $('gedung').innerHTML = '<g transform="translate(' + tx + ' ' + ty + ') scale(' + sk + ')">' + gedungSVG(gw) + '</g>';
+    $('hSvg').style.setProperty('--hw', HW + 60);
+  }
 
   function hLayout() {
     const wrap = $('hHero'), pw = wrap.clientWidth || 390;

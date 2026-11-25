@@ -1,7 +1,7 @@
 // Service worker: aplikasi bisa dibuka cepat & tetap tampil walau sinyal lemah.
 // File aplikasi: ambil dari jaringan dulu (selalu versi terbaru), cadangan dari cache bila offline.
 // Naikkan V setiap kali mengubah file aplikasi agar HP menawarkan "Perbarui".
-const V = 'umum-app-1.0-11251655';
+const V = 'umum-app-1.0-11251710';
 const SHELL = ['./', './index.html', './app.js', './api.js', './demo.js', './app.css', './config.js', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './header.jpg'];
 
