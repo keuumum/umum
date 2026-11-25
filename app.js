@@ -91,7 +91,7 @@
     { tab: 'pegawai', stand: 270, j: 'Papan pegawai', i: 'Kenali pegawai UPK Lombok: foto, unit dan jabatan.' }];
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let hx = 200, hdir = 1, hi = -1, hHover = false, hWalkT = 0;
-  const HB = { o0: 109, o1: 248, o2: 339, o3: 336, bld: 210, c1: 70, c2: 257 };
+  const HB = { o0: 109, o1: 248, o2: 339, o3: 336, bld: 195, c1: 70, c2: 257 };
   const HS0 = [236, 196, 270, 270];
   let HW = 390, HDX = { o0: 0, o1: 0, o2: 0, o3: 0, bld: 0, c1: 0, c2: 0 };
   function hLayout() {

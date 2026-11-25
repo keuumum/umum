@@ -14,9 +14,9 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="config.js?v=1.0.11251620"></script>
-<script src="api.js?v=1.0.11251620"></script>
-<script src="demo.js?v=1.0.11251620"></script>
+<script src="config.js?v=1.0.11251640"></script>
+<script src="api.js?v=1.0.11251640"></script>
+<script src="demo.js?v=1.0.11251640"></script>
 <style>
   :root { --bg:#f4f6fa; --card:#fff; --text:#1f2933; --muted:#6b7785; --line:#dde3ea; --brand:#1a73e8; --ok:#188038; --err:#d93025; --warn:#b06000; }
   @media (prefers-color-scheme: dark) {
@@ -129,9 +129,17 @@
   .kmBox { border: 1.5px dashed var(--line); border-radius: 10px; padding: 12px; text-align: center; margin-top: 6px; }
   .kmBox img { width: 100%; border-radius: 8px; display: block; margin-bottom: 8px; }
   .kmBox .hint { margin-top: 6px; }
+  /* home: awan & burung bergerak */
+  @keyframes awanGo { from { transform: translateX(-120px); } to { transform: translateX(520px); } }
+  .awan { animation: awanGo 70s linear infinite; }
+  .a1 { animation-delay: -12s; } .a2 { animation-duration: 95s; animation-delay: -60s; } .a3 { animation-duration: 55s; animation-delay: -30s; }
+  @keyframes terbang { 0% { transform: translate(-60px, 0); } 50% { transform: translate(210px, -14px); } 100% { transform: translate(480px, 6px); } }
+  .burung { animation: terbang 24s linear infinite; } .b2 { animation-duration: 31s; animation-delay: -17s; }
+  @keyframes kepak { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(-.6); } }
+  .kepak { transform-box: fill-box; transform-origin: 50% 100%; animation: kepak .5s ease-in-out infinite; } .k2 { animation-delay: -.2s; } .k3 { animation-delay: -.35s; }
   .demoBar { background: #ffd400; color: #3a2f00; font-size: 12px; font-weight: 700; text-align: center; padding: 5px 10px; }
 </style>
-<link rel="stylesheet" href="app.css?v=1.0.11251620">
+<link rel="stylesheet" href="app.css?v=1.0.11251640">
 </head>
 <body>
 <header class="appbar">
@@ -152,16 +160,79 @@
     <div class="hWrap">
 <svg id="hSvg" viewBox="0 0 390 400" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Ilustrasi petugas PLN di kantor UPK">
 <defs>
-<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4f0"/><stop offset="1" stop-color="#cdeafb"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86c6ee"/><stop offset=".65" stop-color="#cfe9f7"/><stop offset="1" stop-color="#eef7fb"/></linearGradient>
+<linearGradient id="roofG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#76311f"/><stop offset=".55" stop-color="#984331"/><stop offset="1" stop-color="#b75a42"/></linearGradient>
+<linearGradient id="roofS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".45" stop-color="#fff" stop-opacity=".06"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>
+<pattern id="tile" width="6" height="4.5" patternUnits="userSpaceOnUse"><path d="M0 4.5 Q3 .8 6 4.5" fill="none" stroke="#4e1c12" stroke-opacity=".55" stroke-width=".7"/><path d="M1.5 3.6 Q3 2 4.5 3.6" fill="none" stroke="#e9a184" stroke-opacity=".35" stroke-width=".5"/></pattern>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbfcfb"/><stop offset="1" stop-color="#d9e0df"/></linearGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4a6470"/><stop offset=".42" stop-color="#1d2b32"/><stop offset=".5" stop-color="#7d9aa5"/><stop offset=".6" stop-color="#26363e"/><stop offset="1" stop-color="#162127"/></linearGradient>
+<linearGradient id="sign" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2179c9"/><stop offset="1" stop-color="#0d4b8c"/></linearGradient>
+<linearGradient id="pave" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb3ae"/><stop offset=".4" stop-color="#6f9893"/><stop offset="1" stop-color="#4e7773"/></linearGradient>
+<pattern id="hex" width="12" height="7" patternUnits="userSpaceOnUse"><path d="M0 3.5 L3 0 H9 L12 3.5 L9 7 H3 Z" fill="none" stroke="#24504c" stroke-opacity=".45" stroke-width=".7"/></pattern>
+<linearGradient id="leaf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f9a4a"/><stop offset="1" stop-color="#245f2c"/></linearGradient>
+<pattern id="curb" width="16" height="4" patternUnits="userSpaceOnUse"><rect width="8" height="4" fill="#1d2228"/></pattern>
+<clipPath id="archIn"><path d="M163 214 C163 158 178 116 195 104 C212 116 227 158 227 214 Z"/></clipPath>
 </defs>
 <rect x="-50" width="4000" height="270" fill="url(#sky)"/>
-<g data-l="c1"><g class="cloud c1"><ellipse cx="60" cy="40" rx="26" ry="10" fill="#fff"/><ellipse cx="78" cy="34" rx="18" ry="11" fill="#fff"/></g></g>
-<g data-l="c2"><g class="cloud c2"><ellipse cx="250" cy="28" rx="22" ry="8" fill="#fff" opacity=".9"/><ellipse cx="264" cy="23" rx="14" ry="9" fill="#fff" opacity=".9"/></g></g>
-<g data-l="bld"><rect x="150" y="120" width="120" height="150" fill="#b9c7d3"/><rect x="160" y="135" width="16" height="16" fill="#8fa3b4"/><rect x="186" y="135" width="16" height="16" fill="#8fa3b4"/><rect x="212" y="135" width="16" height="16" fill="#8fa3b4"/><rect x="238" y="135" width="16" height="16" fill="#8fa3b4"/>
-<rect x="160" y="160" width="16" height="16" fill="#8fa3b4"/><rect x="238" y="160" width="16" height="16" fill="#8fa3b4"/>
-<rect x="232" y="50" width="18" height="75" fill="#a7b6c3"/><rect x="230" y="50" width="22" height="8" fill="#d9534f"/>
-<g class="smoke"><circle cx="241" cy="40" r="7" fill="#fff" opacity=".8"/><circle cx="249" cy="26" r="9" fill="#fff" opacity=".6"/><circle cx="259" cy="10" r="11" fill="#fff" opacity=".4"/></g></g>
-<rect x="-50" y="262" width="4000" height="138" fill="#9aa5ad"/><rect x="-50" y="262" width="4000" height="6" fill="#7f8a92"/>
+<!-- awan bergerak -->
+<g data-l="c1"><g class="awan a1"><ellipse cx="40" cy="40" rx="30" ry="10" fill="#fff"/><ellipse cx="56" cy="31" rx="17" ry="12" fill="#fff"/><ellipse cx="29" cy="34" rx="12" ry="9" fill="#fff"/><ellipse cx="44" cy="46" rx="30" ry="4" fill="#d6e5ee" opacity=".9"/></g></g>
+<g data-l="c2"><g class="awan a2"><ellipse cx="250" cy="22" rx="24" ry="8" fill="#fff" opacity=".95"/><ellipse cx="264" cy="16" rx="14" ry="9" fill="#fff" opacity=".95"/><ellipse cx="252" cy="27" rx="22" ry="3" fill="#d6e5ee" opacity=".8"/></g></g>
+<g data-l="c1"><g class="awan a3"><ellipse cx="150" cy="58" rx="20" ry="6" fill="#fff" opacity=".85"/><ellipse cx="160" cy="53" rx="11" ry="7" fill="#fff" opacity=".85"/></g></g>
+<!-- gedung kantor PLN UPK Lombok (berdiri di garis y=230) -->
+<g data-l="bld"><g transform="translate(195 230) scale(.86) translate(-195 -262)">
+<!-- pepohonan & kelapa di belakang -->
+<ellipse cx="18" cy="200" rx="34" ry="46" fill="#2f6b35"/><ellipse cx="44" cy="222" rx="26" ry="34" fill="#3d7f40"/>
+<ellipse cx="372" cy="205" rx="34" ry="44" fill="#2f6b35"/><ellipse cx="348" cy="226" rx="24" ry="30" fill="#3d7f40"/>
+<path d="M378 262 C374 200 380 140 392 96" stroke="#6b5a45" stroke-width="5" fill="none"/>
+<g fill="url(#leaf)"><path d="M392 96 C370 88 352 96 340 110 C360 100 376 100 392 98Z"/><path d="M392 96 C408 82 428 84 440 94 C424 92 408 94 393 99Z"/><path d="M392 96 C384 76 390 62 402 54 C396 70 396 84 393 97Z"/><path d="M392 96 C376 110 370 126 372 140 C378 124 386 110 393 99Z"/><path d="M392 96 C410 104 420 120 422 136 C412 120 402 108 392 99Z"/></g>
+<!-- atap utama (perisai) -->
+<polygon points="22,120 368,120 290,44 100,44" fill="url(#roofG)"/>
+<polygon points="22,120 368,120 290,44 100,44" fill="url(#tile)"/>
+<polygon points="22,120 368,120 290,44 100,44" fill="url(#roofS)"/>
+<path d="M100 44 H290 M100 44 L22 120 M290 44 L368 120" stroke="#5c2418" stroke-width="2.4" stroke-linecap="round"/>
+<rect x="18" y="118" width="354" height="5" fill="#4f3427"/>
+<!-- lantai 2 -->
+<rect x="40" y="123" width="310" height="62" fill="url(#wall)"/>
+<rect x="36" y="123" width="318" height="7" fill="#c7d0d1"/>
+<g fill="#d3dadb"><rect x="40" y="130" width="8" height="55"/><rect x="146" y="130" width="8" height="55"/><rect x="236" y="130" width="8" height="55"/><rect x="342" y="130" width="8" height="55"/></g>
+<g fill="none" stroke="#c4ccce" stroke-width="1.2"><path d="M58 150 l5 -5 l5 5 l-5 5z"/><path d="M128 150 l5 -5 l5 5 l-5 5z"/><path d="M252 150 l5 -5 l5 5 l-5 5z"/><path d="M322 150 l5 -5 l5 5 l-5 5z"/></g>
+<g><rect x="72" y="138" width="52" height="40" fill="#5a3b2b"/><rect x="74.5" y="140.5" width="47" height="35" fill="url(#glass)"/><path d="M86 140v35M98 140v35M110 140v35M74 151h48" stroke="#5a3b2b" stroke-width="1.8"/></g>
+<g><rect x="266" y="138" width="52" height="40" fill="#5a3b2b"/><rect x="268.5" y="140.5" width="47" height="35" fill="url(#glass)"/><path d="M280 140v35M292 140v35M304 140v35M268 151h48" stroke="#5a3b2b" stroke-width="1.8"/></g>
+<!-- atap keliling lantai 1 -->
+<polygon points="14,208 376,208 352,184 38,184" fill="url(#roofG)"/><polygon points="14,208 376,208 352,184 38,184" fill="url(#tile)"/><polygon points="14,208 376,208 352,184 38,184" fill="url(#roofS)"/>
+<rect x="12" y="206" width="366" height="3" fill="#4f3427"/>
+<!-- lantai 1 -->
+<rect x="40" y="209" width="310" height="53" fill="url(#wall)"/>
+<g><rect x="54" y="218" width="64" height="38" fill="#5a3b2b"/><rect x="56.5" y="220.5" width="59" height="33" fill="url(#glass)"/><path d="M71 220v34M86 220v34M101 220v34" stroke="#5a3b2b" stroke-width="1.8"/></g>
+<g><rect x="272" y="218" width="64" height="38" fill="#5a3b2b"/><rect x="274.5" y="220.5" width="59" height="33" fill="url(#glass)"/><path d="M289 220v34M304 220v34M319 220v34" stroke="#5a3b2b" stroke-width="1.8"/></g>
+<rect x="30" y="236" width="16" height="12" rx="2" fill="#e8ecee" stroke="#b9c2c6"/><circle cx="38" cy="242" r="4" fill="none" stroke="#9aa5ab"/>
+<!-- gapura lengkung khas Sasak + logo PLN -->
+<path d="M148 216 C148 150 170 98 195 80 C220 98 242 150 242 216 Z" fill="#a24733"/>
+<path d="M148 216 C148 150 170 98 195 80 C220 98 242 150 242 216 Z" fill="url(#tile)" opacity=".8"/>
+<path d="M156 216 C156 154 174 108 195 93 C216 108 234 154 234 216 Z" fill="#6b4a3a"/>
+<path d="M163 214 C163 158 178 116 195 104 C212 116 227 158 227 214 Z" fill="url(#wall)"/>
+<g clip-path="url(#archIn)" stroke="#cfd6d6" stroke-width=".7"><path d="M160 122h70M160 128h70M160 134h70M160 140h70M160 146h70M160 152h70M160 158h70M160 164h70M160 170h70M160 176h70M160 182h70M160 188h70M160 194h70M160 200h70M160 206h70"/></g>
+<rect x="181" y="117" width="28" height="28" fill="#ffd400" stroke="#e3bd00"/>
+<g fill="none" stroke="#1b82cc" stroke-width="1.7" stroke-linecap="round"><path d="M184 131 q3 -2.4 6 0 t6 0 t6 0 t4 0"/><path d="M184 135.5 q3 -2.4 6 0 t6 0 t6 0 t4 0"/><path d="M184 140 q3 -2.4 6 0 t6 0 t6 0 t4 0"/></g>
+<polygon points="198,120 190,133 196,133 191,144 202,129 196,129 200,120" fill="#e02525"/>
+<text x="195" y="163" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="14" letter-spacing="3" fill="#1b82cc">PLN</text>
+<!-- atap teras + papan nama -->
+<polygon points="126,240 264,240 242,212 148,212" fill="url(#roofG)"/><polygon points="126,240 264,240 242,212 148,212" fill="url(#tile)"/><polygon points="126,240 264,240 242,212 148,212" fill="url(#roofS)"/>
+<path d="M148 212 L126 240 M242 212 L264 240" stroke="#5c2418" stroke-width="2"/>
+<rect x="140" y="240" width="110" height="22" fill="url(#sign)"/>
+<text x="183" y="249" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="6.2" fill="#fff">UNIT PELAKSANA</text>
+<text x="183" y="257.5" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="800" font-size="6.2" fill="#fff">PEMBANGKITAN LOMBOK</text>
+<rect x="228" y="240" width="22" height="22" fill="#fff"/><rect x="233" y="242" width="12" height="11" fill="#ffd400"/><polygon points="240,243 236,248 239,248 237,252 242,247 239,247 241,243" fill="#e02525"/>
+<text x="239" y="259.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="4" fill="#1b82cc">PLN</text>
+</g></g>
+<!-- halaman paving + kanstin -->
+<rect x="-50" y="230" width="4000" height="170" fill="url(#pave)"/>
+<rect x="-50" y="230" width="4000" height="170" fill="url(#hex)"/>
+<rect x="-50" y="228" width="4000" height="4" fill="#ffd400"/>
+<rect x="-50" y="228" width="4000" height="4" fill="url(#curb)"/>
+<!-- burung terbang -->
+<g class="burung b1"><g transform="translate(0 70)"><path class="kepak" d="M0 0 q4 -4 8 0 q4 -4 8 0" fill="none" stroke="#2b3440" stroke-width="1.6" stroke-linecap="round"/><g transform="translate(16 -8) scale(.8)"><path class="kepak k2" d="M0 0 q4 -4 8 0 q4 -4 8 0" fill="none" stroke="#2b3440" stroke-width="1.8" stroke-linecap="round"/></g><g transform="translate(28 5) scale(.7)"><path class="kepak k3" d="M0 0 q4 -4 8 0 q4 -4 8 0" fill="none" stroke="#2b3440" stroke-width="2" stroke-linecap="round"/></g></g></g>
+<g class="burung b2"><g transform="translate(0 28) scale(.8)"><path class="kepak k2" d="M0 0 q4 -4 8 0 q4 -4 8 0" fill="none" stroke="#2b3440" stroke-width="1.8" stroke-linecap="round"/><g transform="translate(14 6) scale(.85)"><path class="kepak" d="M0 0 q4 -4 8 0 q4 -4 8 0" fill="none" stroke="#2b3440" stroke-width="1.8" stroke-linecap="round"/></g></g></g>
 <!-- o3: papan pegawai -->
 <g data-l="o3"><g id="board">
 <rect x="296" y="78" width="80" height="62" rx="4" fill="#fff" stroke="#2b3440" stroke-width="3"/>
@@ -382,6 +453,6 @@
 <div id="updBar" class="hidden"><b>Versi baru aplikasi tersedia</b><button id="btnUpd" type="button">Perbarui</button></div>
 <div id="toast" class="hidden"></div>
 
-<script src="app.js?v=1.0.11251620"></script>
+<script src="app.js?v=1.0.11251640"></script>
 </body>
 </html>
