@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Umum UPKL</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b5394">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Umum UPKL">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="config.js?v=1.0.11251900"></script>
+<script src="api.js?v=1.0.11251900"></script>
+<script src="demo.js?v=1.0.11251900"></script>
+<style>
+  :root { --bg:#f4f6fa; --card:#fff; --text:#1f2933; --muted:#6b7785; --line:#dde3ea; --brand:#1a73e8; --ok:#188038; --err:#d93025; --warn:#b06000; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14181d; --card:#1e242b; --text:#e8ecf0; --muted:#97a3b0; --line:#323b45; --brand:#6ea8fe; --ok:#5bc27a; --err:#f28b82; --warn:#f0b35a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 4px 0 14px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
+  input, select, textarea { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--text); }
+  textarea { min-height:70px; resize:vertical; }
+  .row { display:flex; gap:8px; }
+  .row > input { flex:1; }
+  button { font-size:15px; padding:11px 14px; border:0; border-radius:8px; background:var(--brand); color:#fff; cursor:pointer; }
+  button.sec { background:transparent; color:var(--brand); border:1px solid var(--brand); }
+  button:disabled { opacity:.5; cursor:default; }
+  button.full { width:100%; margin-top:14px; padding:13px; font-size:16px; }
+  .title { font-size:18px; font-weight:600; margin-bottom:4px; }
+  .sub { font-size:13px; color:var(--muted); margin-bottom:10px; }
+  .grid { display:grid; grid-template-columns: 1fr 1fr; gap:8px 12px; }
+  .grid div span { display:block; font-size:12px; color:var(--muted); }
+  .grid div b { font-weight:500; word-break:break-word; }
+  .msg { font-size:14px; margin-top:10px; word-break:break-word; }
+  .msg.err { color:var(--err); } .msg.ok { color:var(--ok); } .msg.warn { color:var(--warn); }
+  .hidden { display:none !important; }
+  a { color:var(--brand); }
+  /* ===== khusus Umum ===== */
+  .badge.wait { background: rgba(176,96,0,.14); color: var(--warn); }
+  .badge.tolak { background: rgba(217,48,37,.12); color: var(--err); }
+  .jn { flex: 0 0 auto; font-size: 10px; font-weight: 800; letter-spacing: .3px; background: #1d2228; color: #fff; border-radius: 6px; padding: 3px 6px; }
+  .two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0 10px; }
+  .it .x { font-size: 12.5px; color: var(--muted); margin-top: 4px; word-break: break-word; }
+  .it .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .it .acts button { padding: 7px 12px; font-size: 13px; }
+  .it { cursor: default; }
+  .room { padding: 12px; border-bottom: 1px solid var(--line); }
+  .room:last-child { border-bottom: 0; }
+  .room .r { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+  .room .r b { font-size: 15px; } .room .r small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .tl { position: relative; height: 14px; border-radius: 5px; background: var(--line); margin-top: 10px; }
+  .tl i { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: var(--brand); }
+  .tl i.me { background: #ffd400; box-shadow: inset 0 0 0 1.5px #8a7300; }
+  .tk { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .bk { display: flex; gap: 10px; align-items: center; font-size: 13.5px; padding: 8px 0 0; margin-top: 8px; border-top: 1px dashed var(--line); }
+  .bk .jam { font-weight: 700; white-space: nowrap; flex: 0 0 92px; }
+  .bk .m { flex: 1; min-width: 0; } .bk .m small { display: block; color: var(--muted); font-size: 12px; }
+  .bk button { padding: 6px 10px; font-size: 12.5px; }
+  .room .pin { margin-top: 10px; padding: 8px 12px; font-size: 13.5px; }
+  .grp { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; padding: 10px 12px 6px; background: rgba(120,130,140,.07); border-bottom: 1px solid var(--line); }
+  .ava { width: 38px; height: 38px; border-radius: 50%; background: #e8f0fb; color: #0b5394; font-weight: 800; display: grid; place-items: center; flex: 0 0 38px; }
+  .files { font-size: 12.5px; color: var(--muted); margin-top: 6px; word-break: break-word; }
+  .orLine { display: flex; align-items: center; gap: 10px; margin: 14px 0 10px; color: var(--muted); font-size: 12px; }
+  .orLine::before, .orLine::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .ava { overflow: hidden; }
+  .ava img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pg .ava { width: 52px; height: 52px; flex: 0 0 52px; border-radius: 12px; font-size: 18px; }
+  .pg { cursor: pointer; }
+  .pg .m small.u { color: var(--brand); font-weight: 600; }
+  #pv { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .pvBox { background: var(--card); border-radius: 16px; width: 100%; max-width: 340px; overflow: hidden; text-align: center; }
+  .pvBox img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #e8f0fb; }
+  .pvT { padding: 12px 14px 4px; } .pvT b { display: block; font-size: 17px; } .pvT span { display: block; color: var(--brand); font-weight: 600; font-size: 13px; margin-top: 2px; }
+  .pvT small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+  .pvBox button { margin: 10px 14px 14px; width: calc(100% - 28px); }
+  .lockCard { text-align: center; padding: 26px 18px; margin-top: 10px; }
+  .lockIc { font-size: 40px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips label { margin: 0; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 20px; padding: 8px 12px; font-size: 14px; color: var(--text); cursor: pointer; background: var(--card); }
+  .chips input { width: auto; margin: 0; }
+  .chips label:has(input:checked) { border-color: var(--brand); background: rgba(26,115,232,.1); color: var(--brand); font-weight: 600; }
+  .fsec { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin: 18px 0 2px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .fsec:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+  .det { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .det b { color: var(--text); font-weight: 600; }
+  .demoBar { background: #ffd400; color: #3a2f00; font-size: 12px; font-weight: 700; text-align: center; padding: 5px 10px; }
+</style>
+<link rel="stylesheet" href="app.css?v=1.0.11251900">
+</head>
+<body>
+<header class="appbar">
+  <img src="icon-192.png" alt="">
+  <div class="t"><b>Umum UPKL</b><small>PLN UPK Lombok</small></div>
+  <button id="btnRefresh" type="button" aria-label="Muat ulang data">⟳</button>
+  <button id="btnMenu" type="button" aria-label="Menu">⋮</button>
+</header>
+<div id="demoBar" class="demoBar hidden">Mode demo · isi API_URL di config.js</div>
+
+<!-- ===== HOME ===== -->
+<main id="viewHome" class="view">
+  <section class="hGreet">
+    <div class="hHi" id="hHi">Selamat datang,</div>
+    <div class="hName" id="hName">Pegawai UPKL</div>
+  </section>
+  <section class="hScene" id="hHero">
+    <div class="hWrap">
+<svg id="hSvg" viewBox="0 0 390 400" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Ilustrasi petugas PLN di kantor UPK">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4f0"/><stop offset="1" stop-color="#cdeafb"/></linearGradient>
+</defs>
+<rect x="-50" width="4000" height="270" fill="url(#sky)"/>
+<g data-l="c1"><g class="cloud c1"><ellipse cx="60" cy="40" rx="26" ry="10" fill="#fff"/><ellipse cx="78" cy="34" rx="18" ry="11" fill="#fff"/></g></g>
+<g data-l="c2"><g class="cloud c2"><ellipse cx="250" cy="28" rx="22" ry="8" fill="#fff" opacity=".9"/><ellipse cx="264" cy="23" rx="14" ry="9" fill="#fff" opacity=".9"/></g></g>
+<g data-l="bld"><rect x="150" y="120" width="120" height="150" fill="#b9c7d3"/><rect x="160" y="135" width="16" height="16" fill="#8fa3b4"/><rect x="186" y="135" width="16" height="16" fill="#8fa3b4"/><rect x="212" y="135" width="16" height="16" fill="#8fa3b4"/><rect x="238" y="135" width="16" height="16" fill="#8fa3b4"/>
+<rect x="160" y="160" width="16" height="16" fill="#8fa3b4"/><rect x="238" y="160" width="16" height="16" fill="#8fa3b4"/>
+<rect x="232" y="50" width="18" height="75" fill="#a7b6c3"/><rect x="230" y="50" width="22" height="8" fill="#d9534f"/>
+<g class="smoke"><circle cx="241" cy="40" r="7" fill="#fff" opacity=".8"/><circle cx="249" cy="26" r="9" fill="#fff" opacity=".6"/><circle cx="259" cy="10" r="11" fill="#fff" opacity=".4"/></g></g>
+<rect x="-50" y="262" width="4000" height="138" fill="#9aa5ad"/><rect x="-50" y="262" width="4000" height="6" fill="#7f8a92"/>
+<!-- o3: papan pegawai -->
+<g data-l="o3"><g id="board">
+<rect x="296" y="78" width="80" height="62" rx="4" fill="#fff" stroke="#2b3440" stroke-width="3"/>
+<text id="hPct" x="336" y="93" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="10" fill="#0b5394">– org</text>
+<circle cx="314" cy="106" r="6" fill="#3fa9e6"/><path d="M304 130 q10 -20 20 0 z" fill="#3fa9e6"/>
+<circle cx="336" cy="104" r="6.5" fill="#ffd400"/><path d="M325 130 q11 -22 22 0 z" fill="#ffd400"/>
+<circle cx="358" cy="106" r="6" fill="#2f9e6e"/><path d="M348 130 q10 -20 20 0 z" fill="#2f9e6e"/>
+<path d="M306 140 L300 200 M366 140 L372 200" stroke="#2b3440" stroke-width="3" stroke-linecap="round"/>
+</g></g>
+<!-- o2: koper SPPD -->
+<g data-l="o2"><g id="koper">
+<path d="M326 222 v-12 h18 v12" stroke="#1d2228" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="306" y="220" width="58" height="48" rx="7" fill="#0b5394" stroke="#0a3d6b" stroke-width="2.5"/>
+<path d="M319 222 v44 M351 222 v44" stroke="#ffd400" stroke-width="4"/>
+<path d="M328 246 l14 -5 l4 2 l-6 4 l6 6 l-3 1 l-7 -4 l-6 3 z" fill="#fff"/>
+<circle cx="315" cy="272" r="4" fill="#2b2b2b"/><circle cx="355" cy="272" r="4" fill="#2b2b2b"/>
+<g class="tag"><path d="M362 226 L372 206" stroke="#555" stroke-width="1.5"/><rect x="358" y="196" width="30" height="14" rx="2" fill="#2f9e6e" transform="rotate(12 373 203)"/><text x="373" y="207" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="7" fill="#fff" transform="rotate(12 373 203)">SPPD</text></g>
+</g></g>
+<!-- o0: ruang rapat -->
+<g data-l="o0"><g id="ruang">
+<rect x="14" y="188" width="190" height="112" rx="8" fill="#eef3f7" stroke="#2b3440" stroke-width="3"/>
+<path d="M14 196 a8 8 0 0 1 8 -8 h174 a8 8 0 0 1 8 8 v8 h-190 z" fill="#0b5394"/>
+<text x="109" y="200" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="9" fill="#fff" letter-spacing="1">RUANG RAPAT</text>
+<rect x="62" y="212" width="94" height="44" rx="3" fill="#1d2228"/><rect x="66" y="216" width="86" height="36" fill="#2f6fae"/>
+<path d="M72 244 l14 -10 l12 6 l16 -14 l20 8" stroke="#ffd400" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="36" cy="226" r="11" fill="#fff" stroke="#2b3440" stroke-width="2"/><path class="needle" d="M36 226 V219 M36 226 L41 229" stroke="#d9534f" stroke-width="2" stroke-linecap="round"/>
+<rect x="48" y="258" width="20" height="16" rx="4" fill="#3fa9e6"/><rect x="80" y="258" width="20" height="16" rx="4" fill="#3fa9e6"/><rect x="118" y="258" width="20" height="16" rx="4" fill="#3fa9e6"/><rect x="150" y="258" width="20" height="16" rx="4" fill="#3fa9e6"/>
+<rect x="36" y="270" width="146" height="11" rx="5" fill="#9b6a43"/><rect x="48" y="281" width="6" height="17" fill="#7a5233"/><rect x="164" y="281" width="6" height="17" fill="#7a5233"/>
+<rect x="184" y="276" width="14" height="22" rx="2" fill="#c98b5a"/><ellipse cx="186" cy="268" rx="6" ry="10" fill="#2f9e6e"/><ellipse cx="196" cy="266" rx="6" ry="11" fill="#1f7a52"/>
+<circle class="led" cx="168" cy="226" r="3.5" fill="#3ddc84"/>
+<rect x="20" y="300" width="20" height="8" fill="#555"/><rect x="178" y="300" width="20" height="8" fill="#555"/>
+</g></g>
+<!-- o1: pom BBM -->
+<g data-l="o1"><g id="pom">
+<rect x="224" y="192" width="48" height="14" rx="3" fill="#ffd400"/><text x="248" y="202" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="8" fill="#3a2f00">BBM</text>
+<rect x="224" y="206" width="48" height="96" rx="6" fill="#d9534f" stroke="#8e2b28" stroke-width="2"/>
+<rect x="231" y="215" width="34" height="22" rx="3" fill="#e8f0fb"/><text x="248" y="230" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="9" fill="#1d2228">20 L</text>
+<rect x="231" y="243" width="34" height="5" rx="2" fill="#fff" opacity=".7"/>
+<path d="M272 236 q14 6 12 34 q-2 16 -12 20" stroke="#1d2228" stroke-width="4" fill="none" stroke-linecap="round"/>
+<rect x="268" y="226" width="9" height="18" rx="2" fill="#1d2228"/>
+<g class="tag"><rect x="232" y="258" width="32" height="18" rx="2" fill="#fff" stroke="#8a7300" stroke-width="1.2"/><path d="M240 258 v18" stroke="#8a7300" stroke-dasharray="2 2"/><text x="252" y="270" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="6" fill="#8a7300">KUPON</text></g>
+<rect x="218" y="300" width="60" height="8" rx="3" fill="#3d444c"/>
+</g></g>
+<g class="hl" data-k="0" data-l="o0"><rect x="8" y="182" width="202" height="132" rx="8" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="14 3 6 3" stroke-linecap="round"/><path d="M110 168 q4 8 0 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="110" y="162" text-anchor="middle" font-family="Caveat Brush,cursive" font-size="25" fill="#fff" stroke="#1d2228" stroke-width="4" paint-order="stroke">Ruang Rapat</text></g><g class="hl" data-k="1" data-l="o1"><rect x="212" y="186" width="72" height="128" rx="8" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="14 3 6 3" stroke-linecap="round"/><path d="M248 172 q4 6 0 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="248" y="168" text-anchor="middle" font-family="Caveat Brush,cursive" font-size="25" fill="#fff" stroke="#1d2228" stroke-width="4" paint-order="stroke">Kupon BBM</text></g><g class="hl" data-k="2" data-l="o2"><rect x="292" y="190" width="94" height="92" rx="8" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="14 3 6 3" stroke-linecap="round"/><path d="M340 286 q4 -6 0 -2" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="340" y="302" text-anchor="middle" font-family="Caveat Brush,cursive" font-size="25" fill="#fff" stroke="#1d2228" stroke-width="4" paint-order="stroke">SPPD</text></g><g class="hl" data-k="3" data-l="o3"><rect x="290" y="70" width="92" height="76" rx="8" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="14 3 6 3" stroke-linecap="round"/><path d="M282 60 q8 4 10 14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="278" y="66" text-anchor="end" font-family="Caveat Brush,cursive" font-size="25" fill="#fff" stroke="#1d2228" stroke-width="4" paint-order="stroke">Pegawai</text></g>
+<g id="hMan" style="transform:translate(200px,392px) scale(.78,.78)">
+<g id="hManIn" transform="translate(-262,-392)">
+<g class="breathe">
+<ellipse cx="262" cy="390" rx="46" ry="7" fill="#000" opacity=".18"/>
+<g class="legL"><path d="M240 318 L236 376 L254 376 L258 324 Z" fill="#23324a"/><path d="M228 374 h30 v10 h-34 a6 6 0 0 1 4-10z" fill="#1d1d1d"/><path d="M224 382 h34" stroke="#ffd400" stroke-width="3"/></g>
+<g class="legR"><path d="M272 318 L270 376 L288 376 L286 322 Z" fill="#23324a"/><path d="M268 374 h28 a6 6 0 0 1 4 10 h-32z" fill="#1d1d1d"/><path d="M268 382 h32" stroke="#ffd400" stroke-width="3"/></g>
+
+
+
+<path d="M236 236 q26 -12 52 0 l6 88 h-64 z" fill="#f4f6f8"/>
+<path d="M234 240 q28 -10 56 0 l4 84 h-24 l-6 -70 l-6 70 h-24 z" fill="#3fa9e6"/>
+<path d="M232 286 h62 v8 h-62z" fill="#d8dee4"/><path d="M232 300 h62 v6 h-62z" fill="#d8dee4"/>
+<path d="M246 242 v84 M278 242 v84" stroke="#d8dee4" stroke-width="6"/>
+<rect x="282" y="252" width="13" height="13" rx="1" fill="#ffd400"/><path d="M289 254 l-3 5 h4 l-3 5" stroke="#d9534f" stroke-width="1.4" fill="none"/>
+<text x="257" y="274" text-anchor="middle" font-family="Plus Jakarta Sans,sans-serif" font-weight="800" font-size="8" fill="#fff">PLN</text>
+<g class="armR"><path d="M236 246 q-30 6 -54 24" stroke="#f4f6f8" stroke-width="13" stroke-linecap="round" fill="none"/><path d="M236 246 q-14 3 -22 8" stroke="#3fa9e6" stroke-width="15" stroke-linecap="round" fill="none"/>
+<circle cx="180" cy="272" r="7" fill="#f1c27d"/><rect x="164" y="258" width="14" height="24" rx="3" fill="#222" transform="rotate(-20 171 270)"/>
+<path class="beam" id="hBeam" style="display:none" d="M164 266 L120 270 L164 276 Z" fill="#ff3b30" opacity=".55"/></g>
+<g class="wave"><path d="M290 246 q18 -18 22 -46" stroke="#f4f6f8" stroke-width="13" stroke-linecap="round" fill="none"/><path d="M290 246 q8 -8 12 -18" stroke="#3fa9e6" stroke-width="15" stroke-linecap="round" fill="none"/><circle cx="312" cy="196" r="8" fill="#f1c27d"/></g>
+<rect x="254" y="222" width="16" height="16" fill="#f1c27d"/>
+<g class="head"><circle cx="262" cy="200" r="27" fill="#f6cf9a"/>
+<ellipse cx="236" cy="203" rx="5" ry="7" fill="#f1c27d"/><ellipse cx="288" cy="203" rx="5" ry="7" fill="#f1c27d"/>
+<g class="eyes"><ellipse cx="252" cy="201" rx="3.6" ry="4.6" fill="#2b2b2b"/><ellipse cx="272" cy="201" rx="3.6" ry="4.6" fill="#2b2b2b"/><circle cx="253" cy="199" r="1.2" fill="#fff"/><circle cx="273" cy="199" r="1.2" fill="#fff"/></g>
+<ellipse cx="246" cy="211" rx="4" ry="2.5" fill="#f19a8a" opacity=".6"/><ellipse cx="278" cy="211" rx="4" ry="2.5" fill="#f19a8a" opacity=".6"/>
+<path d="M254 212 q8 8 16 0" stroke="#7a3a2a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<path d="M232 190 q30 -42 60 0 z" fill="#ffffff" stroke="#c9d2da" stroke-width="2"/><rect x="228" y="186" width="68" height="8" rx="4" fill="#ffffff" stroke="#c9d2da" stroke-width="2"/>
+<rect x="255" y="166" width="14" height="14" rx="1" fill="#ffd400"/><path d="M262 168 l-3 5 h4 l-3 5" stroke="#d9534f" stroke-width="1.4" fill="none"/></g>
+</g>
+</g>
+</g>
+<rect class="hit" data-k="0" data-l="o0" x="8" y="182" width="202" height="132" rx="8" fill="transparent" tabindex="0" role="button" aria-label="Peminjaman ruang"/><rect class="hit" data-k="1" data-l="o1" x="212" y="186" width="72" height="128" rx="8" fill="transparent" tabindex="0" role="button" aria-label="Kupon BBM"/><rect class="hit" data-k="2" data-l="o2" x="292" y="190" width="94" height="92" rx="8" fill="transparent" tabindex="0" role="button" aria-label="Lapor SPPD"/><rect class="hit" data-k="3" data-l="o3" x="290" y="70" width="92" height="76" rx="8" fill="transparent" tabindex="0" role="button" aria-label="Data pegawai"/></svg>
+      <div class="hBub" id="hBub"><b id="hBubT">Halo!</b><span id="hBubI">Saya petugas Umum.</span><i id="hBubTail"></i></div>
+    </div>
+  </section>
+  <div class="wrap instWrap hidden" id="hInstall">
+    <div class="instBar"><div><b>Pasang Umum UPKL di HP</b><small class="instTxt">Buka lebih cepat dari layar utama.</small></div>
+    <button type="button" class="instBtn">Pasang</button></div>
+  </div>
+  <section class="wrap hLast">
+    <div class="hLastHead"><span class="hand">Pengajuan saya</span><button type="button" id="hAll" class="lnk">Lihat semua</button></div>
+    <div id="hRecent" class="list"><div class="empty">Memuat…</div></div>
+  </section>
+  <div class="hint foot">app v1.0 - © Han with Claude🤖✨</div>
+</main>
+
+<!-- ===== RUANG ===== -->
+<main id="viewRuang" class="view hidden">
+  <div class="wrap">
+    <h1>Peminjaman Ruang</h1>
+    <div class="toolbar"><input id="rTgl" type="date" aria-label="Tanggal"><button id="rBaru" type="button">＋ Pinjam ruang</button></div>
+    <div class="meta"><span id="rInfo">Jadwal per hari · jam 07–18</span><button id="btnReloadR" class="sec" type="button">⟳</button></div>
+    <div id="rList" class="list"><div class="empty">Memuat…</div></div>
+  </div>
+</main>
+
+<!-- ===== BBM ===== -->
+<main id="viewBbm" class="view hidden">
+  <div class="wrap">
+    <h1>Kupon BBM</h1>
+    <button id="bBaru" class="full" type="button" style="margin-top:0">⛽ Ajukan kupon BBM</button>
+    <div class="meta"><span id="bInfo">Riwayat pengajuan</span><button id="btnReloadB" class="sec" type="button">⟳</button></div>
+    <div id="bList" class="list"><div class="empty">Memuat…</div></div>
+  </div>
+</main>
+
+<!-- ===== SPPD ===== -->
+<main id="viewSppd" class="view hidden">
+  <div class="wrap">
+    <h1>Lapor SPPD</h1>
+    <button id="sBaru" class="full" type="button" style="margin-top:0">✈️ Buat laporan SPPD</button>
+    <div class="meta"><span id="sInfo">Laporan perjalanan dinas</span><button id="btnReloadS" class="sec" type="button">⟳</button></div>
+    <div id="sList" class="list"><div class="empty">Memuat…</div></div>
+  </div>
+</main>
+
+<!-- ===== PEGAWAI ===== -->
+<main id="viewPegawai" class="view hidden">
+  <div class="wrap">
+    <h1>Data Pegawai</h1>
+    <div class="meta"><span id="pInfo">Per unit</span><button id="btnReloadP" class="sec" type="button">⟳</button></div>
+    <div id="pList" class="list"><div class="empty">Memuat…</div></div>
+  </div>
+</main>
+
+<!-- ===== TAB TERKUNCI (GUEST) ===== -->
+<main id="viewLock" class="view hidden">
+  <div class="wrap">
+    <div class="card lockCard">
+      <div class="lockIc">🔒</div>
+      <div class="title" id="lockTitle">Khusus pegawai</div>
+      <div class="sub">Menu ini hanya untuk pegawai UPK Lombok. Keluar lalu masuk dengan <b>NIP</b> untuk membukanya.</div>
+      <button id="lockLogin" class="full" type="button">Masuk dengan NIP</button>
+      <button id="lockRuang" class="sec full" type="button" style="margin-top:8px">Kembali ke Pinjam Ruang</button>
+    </div>
+  </div>
+</main>
+
+<!-- ===== LIHAT FOTO PEGAWAI ===== -->
+<div id="pv" class="hidden" role="dialog" aria-label="Foto pegawai">
+  <div class="pvBox"><img id="pvImg" alt=""><div class="pvT"><b id="pvNama"></b><span id="pvUnit"></span><small id="pvJab"></small></div>
+  <button id="pvClose" type="button">Tutup</button></div>
+</div>
+
+<!-- ===== NAVIGASI BAWAH ===== -->
+<nav class="nav" id="nav">
+  <button type="button" data-v="home" class="on"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9H4z"/><path d="M10 20v-6h4v6"/></svg>Home</button>
+  <button type="button" data-v="ruang"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V5a1 1 0 0 1 1-1h9v16M14 8h5v12M3 20h18M10 12v1"/></svg>Ruang</button>
+  <button type="button" data-v="bbm"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M5 10h9M14 8l3 3v6a1.5 1.5 0 0 0 3 0V8l-3-3"/></svg>BBM</button>
+  <button type="button" data-v="sppd"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16l20-8-6 12-3-5-5 3z"/><path d="M13 15l9-7"/></svg>SPPD</button>
+  <button type="button" data-v="pegawai"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.2 2.6 3.5 5.5"/></svg>Pegawai</button>
+</nav>
+
+<!-- ===== FORMULIR (halaman penuh) ===== -->
+<div id="fSheet" class="sheet hidden">
+  <div class="appbar">
+    <button id="btnFBack" type="button">←</button>
+    <div class="t"><b id="fTitle">Formulir</b><small id="fSub"></small></div>
+  </div>
+  <div class="wrap"><form class="card" id="fForm" novalidate></form></div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="login" class="hidden">
+  <img class="hdr" src="header.jpg" alt="">
+  <div class="bg">
+  <div class="box">
+    <img class="logo" src="icon-192.png" alt="">
+    <h2>Layanan Umum UPKL</h2>
+    <p>PT PLN (Persero) UPK Lombok</p>
+    <input id="pinIn" type="text" placeholder="Masukkan NIP" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+    <button id="btnLogin" class="full" type="button">Masuk</button>
+    <div id="loginMsg" class="msg err"></div>
+    <div class="orLine"><span>atau</span></div>
+    <button id="btnGuest" class="sec full" type="button" style="margin-top:0">Masuk sebagai GUEST</button>
+    <div class="instWrap hidden" id="lInstall" style="margin-top:14px">
+      <div class="instBar"><div><b>Pasang aplikasi di HP</b><small class="instTxt">Buka lebih cepat dari layar utama.</small></div>
+      <button type="button" class="instBtn">Pasang</button></div>
+    </div>
+    <div class="hint" style="margin-top:18px" id="loginHint">Pegawai: masukkan <b>NIP</b> Anda (nama terisi otomatis).<br>Tamu / non-pegawai: pilih <b>GUEST</b>, tanpa NIP atau PIN (sementara hanya untuk pinjam ruang).<br>Cukup sekali di HP ini.</div>
+  </div>
+  </div>
+</div>
+
+<div id="menu" class="hidden">
+  <div class="ab" id="aboutTxt"></div>
+  <div class="ab" style="font-weight:700;color:var(--text)">Fitur lain</div>
+  <button type="button" class="soonBtn">📝 Permintaan ATK <small>(segera)</small></button>
+  <button type="button" class="soonBtn">🚗 Kendaraan dinas <small>(segera)</small></button>
+  <button type="button" class="soonBtn">📖 Buku tamu <small>(segera)</small></button>
+  <button type="button" class="soonBtn">✉️ Surat masuk / keluar <small>(segera)</small></button>
+  <button type="button" class="soonBtn">🛠️ Lapor kerusakan fasilitas <small>(segera)</small></button>
+  <button id="mReload" type="button">⟳ Muat ulang data</button>
+  <button id="mInstall" type="button" class="hidden">📲 Pasang di layar utama</button>
+  <button id="mLogout" type="button">Keluar (hapus login dari HP ini)</button>
+</div>
+<div id="updBar" class="hidden"><b>Versi baru aplikasi tersedia</b><button id="btnUpd" type="button">Perbarui</button></div>
+<div id="toast" class="hidden"></div>
+
+<script src="app.js?v=1.0.11251900"></script>
+</body>
+</html>
