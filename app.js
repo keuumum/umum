@@ -453,7 +453,7 @@
   }
 
   // ---------- mulai ----------
-  if (APP.demo()) { $('demoBar').classList.remove('hidden'); $('loginHint').innerHTML += '<br><b>Mode demo:</b> NIP <b>8809008H2</b> (admin) atau <b>7293084H</b>.'; }
+  if (APP.demo()) $('demoBar').classList.remove('hidden');
   try { LOGIN = JSON.parse(LS.get('umum-login', 'null')); } catch (e) { LOGIN = null; }
   go(isGuest() ? 'ruang' : 'home');   // aplikasi selalu dibuka di Home
   if (!APP.pin()) showLogin('');

@@ -33,7 +33,7 @@
     const p = db.peg.find(x => x.nip.toUpperCase() === pin);
     const u = pin === 'GUEST' ? { mode: 'guest', nip: '', nama: 'Tamu', unit: '', admin: false }
       : p ? { mode: 'nip', nip: p.nip, nama: p.nama, unit: p.unit, jabatan: p.jabatan, admin: !!p.admin } : null;
-    if (!u) return fail('NIP tidak terdaftar. Demo: NIP 8809008H2 (admin) atau 7293084H.');
+    if (!u) return fail('NIP tidak terdaftar. Periksa NIP Anda atau masuk sebagai GUEST.');
     if (u.mode === 'guest' && ['infoApp', 'home', 'ruangList', 'ruangBook', 'ruangStatus'].indexOf(fn) < 0) return fail('Khusus pegawai. Silakan masuk dengan NIP.');
     const d = args[0] || {}, own = r => u.nip && r.nip === u.nip;
     const out = (r, full) => {
