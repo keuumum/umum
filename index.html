@@ -14,9 +14,9 @@
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="config.js?v=1.0.11251600"></script>
-<script src="api.js?v=1.0.11251600"></script>
-<script src="demo.js?v=1.0.11251600"></script>
+<script src="config.js?v=1.0.11251620"></script>
+<script src="api.js?v=1.0.11251620"></script>
+<script src="demo.js?v=1.0.11251620"></script>
 <style>
   :root { --bg:#f4f6fa; --card:#fff; --text:#1f2933; --muted:#6b7785; --line:#dde3ea; --brand:#1a73e8; --ok:#188038; --err:#d93025; --warn:#b06000; }
   @media (prefers-color-scheme: dark) {
@@ -93,9 +93,45 @@
   .fsec:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
   .det { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
   .det b { color: var(--text); font-weight: 600; }
+  .cekCard { margin-bottom: 4px; }
+  .cekCard .h3 { margin-bottom: 0; }
+  .dp { position: relative; }
+  .dpBtn { width: 100%; display: flex; align-items: center; gap: 10px; text-align: left; background: var(--card); color: var(--text); border: 1px solid var(--line); padding: 11px 12px; font-size: 16px; }
+  .dpBtn .t { flex: 1; font-weight: 600; } .dpBtn .car { color: var(--muted); }
+  .dpPop { position: absolute; z-index: 40; left: 0; right: 0; top: 100%; margin-top: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 28px rgba(0,0,0,.22); padding: 10px; max-width: 360px; }
+  .dpHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .dpHead b { font-size: 15px; }
+  .dpHead button, .dpFoot button { background: none; color: var(--brand); padding: 6px 12px; font-size: 18px; }
+  .dpGrid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 2px 0; }
+  .dpGrid .dn { text-align: center; font-size: 11px; color: var(--muted); padding: 4px 0; font-weight: 600; }
+  .dpGrid button { background: none; color: var(--text); padding: 0; height: 38px; border-radius: 0; font-size: 14px; }
+  .dpGrid button.td { font-weight: 800; color: var(--brand); }
+  .dpGrid button.in { background: rgba(26,115,232,.14); }
+  .dpGrid button.s, .dpGrid button.e { background: var(--brand); color: #fff; font-weight: 700; }
+  .dpGrid button.s { border-radius: 19px 0 0 19px; } .dpGrid button.e { border-radius: 0 19px 19px 0; } .dpGrid button.s.e { border-radius: 19px; }
+  .dpGrid button:disabled { opacity: .3; }
+  .dpFoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .dpFoot button { font-size: 14px; font-weight: 600; }
+  .rk { border-left: 3px solid transparent; padding-left: 8px; margin-left: -11px; }
+  .rk.bt { border-left-color: var(--err); }
+  .pick { background: rgba(26,115,232,.08); border: 1px solid rgba(26,115,232,.3); border-radius: 10px; padding: 10px 12px; font-size: 14px; line-height: 1.5; }
+  .pick b { display: block; font-size: 15px; }
+  .pick button { margin-top: 8px; padding: 6px 12px; font-size: 13px; }
+  #camView { position: fixed; inset: 0; z-index: 110; background: #000; color: #fff; display: flex; flex-direction: column; }
+  .camTop { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top) + 8px) 10px 8px; font-size: 14px; }
+  .camTop button { background: rgba(255,255,255,.16); width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 18px; }
+  #camVid { flex: 1; min-height: 0; width: 100%; object-fit: contain; background: #000; }
+  #camMsg { text-align: center; font-size: 13px; color: #cfd6dc; padding: 6px 12px; min-height: 28px; }
+  .camBot { display: flex; justify-content: center; padding: 10px 0 calc(env(safe-area-inset-bottom) + 18px); }
+  #camShot { width: 74px; height: 74px; border-radius: 50%; background: #fff; padding: 0; border: 4px solid rgba(255,255,255,.4); background-clip: padding-box; }
+  #camShot i { display: block; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #000; }
+  #camShot:disabled { opacity: .4; }
+  .kmBox { border: 1.5px dashed var(--line); border-radius: 10px; padding: 12px; text-align: center; margin-top: 6px; }
+  .kmBox img { width: 100%; border-radius: 8px; display: block; margin-bottom: 8px; }
+  .kmBox .hint { margin-top: 6px; }
   .demoBar { background: #ffd400; color: #3a2f00; font-size: 12px; font-weight: 700; text-align: center; padding: 5px 10px; }
 </style>
-<link rel="stylesheet" href="app.css?v=1.0.11251600">
+<link rel="stylesheet" href="app.css?v=1.0.11251620">
 </head>
 <body>
 <header class="appbar">
@@ -219,8 +255,18 @@
 <main id="viewRuang" class="view hidden">
   <div class="wrap">
     <h1>Peminjaman Ruang</h1>
-    <div class="toolbar"><input id="rTgl" type="date" aria-label="Tanggal"><button id="rBaru" type="button">＋ Pinjam ruang</button></div>
-    <div class="meta"><span id="rInfo">Jadwal per hari · jam 07–18</span><button id="btnReloadR" class="sec" type="button">⟳</button></div>
+    <div class="card cekCard">
+      <div class="h3">Cek ketersediaan ruangan</div>
+      <label>Tanggal pakai</label>
+      <div class="dp">
+        <button type="button" id="rRange" class="dpBtn" aria-haspopup="dialog"><span>📅</span><span id="rRangeTxt" class="t">–</span><span class="car">▾</span></button>
+        <div id="dpPop" class="dpPop hidden" role="dialog" aria-label="Pilih tanggal"></div>
+      </div>
+      <div class="two"><div><label for="rMulai">Jam mulai</label><select id="rMulai"></select></div>
+      <div><label for="rSelesai">Jam selesai</label><select id="rSelesai"></select></div></div>
+      <button id="rCek" class="full" type="button">🔍 Cek ketersediaan</button>
+    </div>
+    <div class="meta"><span id="rInfo"></span><button id="btnReloadR" class="sec" type="button" aria-label="Muat ulang">⟳</button></div>
     <div id="rList" class="list"><div class="empty">Memuat…</div></div>
   </div>
 </main>
@@ -291,6 +337,14 @@
   <div class="wrap"><form class="card" id="fForm" novalidate></form></div>
 </div>
 
+<!-- ===== KAMERA (foto KM, langsung dari kamera) ===== -->
+<div id="camView" class="hidden" role="dialog" aria-label="Kamera">
+  <div class="camTop"><button id="camClose" type="button" aria-label="Tutup">✕</button><span>Foto KM / odometer hari ini</span></div>
+  <video id="camVid" playsinline muted autoplay></video>
+  <div id="camMsg">Memulai kamera…</div>
+  <div class="camBot"><button id="camShot" type="button" aria-label="Ambil foto"><i></i></button></div>
+</div>
+
 <!-- ===== LOGIN ===== -->
 <div id="login" class="hidden">
   <img class="hdr" src="header.jpg" alt="">
@@ -328,6 +382,6 @@
 <div id="updBar" class="hidden"><b>Versi baru aplikasi tersedia</b><button id="btnUpd" type="button">Perbarui</button></div>
 <div id="toast" class="hidden"></div>
 
-<script src="app.js?v=1.0.11251600"></script>
+<script src="app.js?v=1.0.11251620"></script>
 </body>
 </html>

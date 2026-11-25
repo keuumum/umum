@@ -71,7 +71,7 @@
       if (isGuest()) {
         const ids = guestIds();
         const rs = ids.length ? await APP.call('ruangStatus', [ids]) : [];
-        d.recent = rs.sort((a, b) => b.tanggal.localeCompare(a.tanggal)).slice(0, 5).map(r => ({ jenis: 'Ruang', judul: r.ruang + ' · ' + (r.acara || ''), sub: r.tanggal + ' · ' + r.mulai + '–' + r.selesai, status: r.status }));
+        d.recent = rs.sort((a, b) => b.tanggal.localeCompare(a.tanggal)).slice(0, 5).map(r => ({ jenis: 'Ruang', judul: r.ruang + ' · ' + (r.acara || ''), sub: rentang(r.tanggal, r.sampai) + ' · ' + r.mulai + '–' + r.selesai, status: r.status }));
       }
       $('hPct').textContent = d.pegawai + ' org';
       HO[0].i = d.ruangHariIni ? 'Hari ini ada ' + d.ruangHariIni + ' jadwal rapat. Cek jam kosong & pinjam ruangnya. Ketuk ruangannya!' : HO0;
@@ -171,7 +171,7 @@
   }
   function closeFormUi() { $('fSheet').classList.add('hidden'); document.body.style.overflow = ''; }
   const closeForm = () => history.back();
-  window.addEventListener('popstate', () => { if (!$('fSheet').classList.contains('hidden')) closeFormUi(); });
+  window.addEventListener('popstate', () => { tutupKamera(); if (!$('fSheet').classList.contains('hidden')) closeFormUi(); });
   $('btnFBack').addEventListener('click', closeForm);
   $('fForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -198,42 +198,101 @@
     '<label for="f_hp">No HP / WhatsApp</label><input id="f_hp" name="hp" type="tel" inputmode="tel" required data-l="No HP" autocomplete="tel">';
   const chips = (name, type, opts, checked) => '<div class="chips">' + opts.map(o => '<label><input type="' + type + '" name="' + name + '" value="' + esc(o) + '"' + (checked === o ? ' checked' : '') + '>' + esc(o) + '</label>').join('') + '</div>';
 
-  // ---------- RUANG ----------
-  let RU = { ruang: [], booking: [] };
-  const H0 = 7, H1 = 18, pos = t => { const p = String(t).split(':'); return Math.max(0, Math.min(100, ((+p[0] + (+p[1] || 0) / 60) - H0) / (H1 - H0) * 100)); };
-  $('rTgl').value = today();
-  async function renderRuang() {
-    const t = $('rTgl').value || today();
-    $('rInfo').textContent = 'Jadwal ' + tgl(t) + ' · jam 07–18';
-    $('rList').innerHTML = '<div class="empty">Memuat…</div>';
-    try { RU = await APP.call('ruangList', [t]); } catch (e) { $('rList').innerHTML = errBox(e); return; }
-    $('rList').innerHTML = RU.ruang.map((r, i) => {
-      const bs = RU.booking.filter(b => b.ruang === r.nama);
-      return '<div class="room"><div class="r"><div><b>' + esc(r.nama) + '</b><small>' + esc(r.lokasi) + (r.kapasitas ? ' · ' + esc(r.kapasitas) + ' orang' : '') + (r.fasilitas ? ' · ' + esc(r.fasilitas) : '') + '</small></div>' +
-        (bs.length ? '<span class="badge wait">' + bs.length + ' jadwal</span>' : '<span class="badge ok">Kosong</span>') + '</div>' +
-        '<div class="tl" aria-hidden="true">' + bs.map(b => '<i class="' + (isMine(b) ? 'me' : '') + '" style="left:' + pos(b.mulai) + '%;width:' + Math.max(2, pos(b.selesai) - pos(b.mulai)) + '%"></i>').join('') + '</div>' +
-        '<div class="tk"><span>07</span><span>10</span><span>13</span><span>16</span><span>18</span></div>' +
-        bs.map(b => '<div class="bk"><div class="jam">' + esc(b.mulai) + '–' + esc(b.selesai) + '</div><div class="m">' + (b.acara ? esc(b.acara) : '<i>Terpakai</i>') +
-          (b.nama ? '<small>' + esc(b.nama) + (b.unit ? ' · ' + esc(b.unit) : '') + (b.peserta ? ' · ' + esc(b.peserta) + ' orang' : '') + '</small>' : '') +
-          (b.tataLetak ? '<div class="det">Tata letak <b>' + esc(b.tataLetak) + '</b> · Konsumsi <b>' + esc(b.konsumsi) + (b.menu ? ' (' + esc(b.menu) + ')' : '') + '</b>' +
-            (b.perlengkapan ? ' · Perlengkapan <b>' + esc(b.perlengkapan) + '</b>' : '') + (b.hp ? ' · HP <a href="tel:' + esc(b.hp) + '">' + esc(b.hp) + '</a>' : '') + (b.catatan ? '<br>Catatan: ' + esc(b.catatan) : '') + '</div>' : '') +
-          '<div class="acts">' + badge(b.status) + (isAdmin() && b.status === 'Menunggu' ? '<button type="button" data-proses="' + esc(b.id) + '">Proses</button>' : '') +
-          (((isMine(b) && !isGuest()) || isAdmin()) ? '<button class="sec" type="button" data-batal="' + esc(b.id) + '">Batal</button>' : '') + '</div></div></div>').join('') +
-        '<button class="sec pin" type="button" data-pinjam="' + i + '">＋ Pinjam ruang ini</button></div>';
-    }).join('') || '<div class="empty">Belum ada data ruang. Isi sheet "Ruang" di spreadsheet.</div>';
+  // ---------- RUANG: cek ketersediaan -> pilih ruang -> isi detail ----------
+  const HARI = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const MAX_HARI = 14;
+  const toD = s => { const p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); };
+  const jmlHari = (a, b) => Math.round((toD(b) - toD(a)) / 864e5) + 1;
+  function rentang(a, b) {
+    if (!a) return '';
+    if (!b || a === b) { const d = toD(a); return HARI[d.getDay()] + ', ' + tgl(a); }
+    const A = toD(a), B = toD(b);
+    const kiri = A.getFullYear() === B.getFullYear() ? A.getDate() + (A.getMonth() === B.getMonth() ? '' : ' ' + BLN[A.getMonth()]) : tgl(a);
+    return kiri + ' – ' + tgl(b) + ' (' + jmlHari(a, b) + ' hari)';
   }
-  function formRuang(nama) {
-    if (!RU.ruang.length) { toast('Daftar ruang belum dimuat'); return; }
-    const t = $('rTgl').value < today() ? today() : ($('rTgl').value || today());
-    openForm('Pinjam ruang', 'Diproses admin Umum · jam bentrok ditolak otomatis',
+  // pilihan jam 06:00 – 22:00 tiap 30 menit
+  const JAM = []; for (let m = 6 * 60; m <= 22 * 60; m += 30) JAM.push(pad(Math.floor(m / 60)) + ':' + pad(m % 60));
+  $('rMulai').innerHTML = JAM.slice(0, -1).map(j => '<option>' + j + '</option>').join('');
+  $('rSelesai').innerHTML = JAM.slice(1).map(j => '<option>' + j + '</option>').join('');
+  $('rMulai').value = '08:00'; $('rSelesai').value = '12:00';
+  $('rMulai').addEventListener('change', () => { if ($('rSelesai').value <= $('rMulai').value) $('rSelesai').value = JAM[Math.min(JAM.indexOf($('rMulai').value) + 2, JAM.length - 1)]; });
+
+  // ---- kalender dropdown (pilih tanggal mulai lalu tanggal selesai) ----
+  const DP = { dari: today(), sampai: today(), bln: null, tahap: 0 };
+  function dpTxt() { $('rRangeTxt').textContent = rentang(DP.dari, DP.sampai); }
+  function dpRender() {
+    const b = DP.bln, y = b.getFullYear(), m = b.getMonth();
+    const awal = (new Date(y, m, 1).getDay() + 6) % 7, n = new Date(y, m + 1, 0).getDate(), t = today();
+    const bulanIni = new Date(); bulanIni.setDate(1); bulanIni.setHours(0, 0, 0, 0);
+    let g = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(x => '<div class="dn">' + x + '</div>').join('');
+    for (let i = 0; i < awal; i++) g += '<div></div>';
+    for (let d = 1; d <= n; d++) {
+      const s = y + '-' + pad(m + 1) + '-' + pad(d);
+      const c = [s === t ? 'td' : '', s === DP.dari ? 's' : '', s === DP.sampai ? 'e' : '', s > DP.dari && s < DP.sampai ? 'in' : ''].join(' ');
+      g += '<button type="button" data-d="' + s + '" class="' + c + '"' + (s < t ? ' disabled' : '') + '>' + d + '</button>';
+    }
+    $('dpPop').innerHTML = '<div class="dpHead"><button type="button" data-nav="-1" aria-label="Bulan sebelumnya"' + (b <= bulanIni ? ' disabled' : '') + '>‹</button><b>' +
+      ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][m] + ' ' + y +
+      '</b><button type="button" data-nav="1" aria-label="Bulan berikutnya">›</button></div><div class="dpGrid">' + g + '</div>' +
+      '<div class="dpFoot"><span>' + (DP.tahap ? 'Ketuk tanggal <b>selesai</b> (ketuk sama = 1 hari)' : 'Ketuk tanggal <b>mulai</b>') + '</span><button type="button" data-ok="1">Selesai</button></div>';
+  }
+  function dpOpen() { DP.bln = toD(DP.dari); DP.bln.setDate(1); DP.tahap = 0; dpRender(); $('dpPop').classList.remove('hidden'); }
+  function dpClose() { $('dpPop').classList.add('hidden'); }
+  $('rRange').addEventListener('click', e => { e.stopPropagation(); $('dpPop').classList.contains('hidden') ? dpOpen() : dpClose(); });
+  $('dpPop').addEventListener('click', e => {
+    e.stopPropagation();
+    const nav = e.target.closest('[data-nav]'), day = e.target.closest('[data-d]');
+    if (nav) { DP.bln.setMonth(DP.bln.getMonth() + Number(nav.dataset.nav)); dpRender(); return; }
+    if (e.target.closest('[data-ok]')) { dpClose(); cekRuang(); return; }
+    if (!day) return;
+    const s = day.dataset.d;
+    if (!DP.tahap || s < DP.dari) { DP.dari = DP.sampai = s; DP.tahap = 1; }
+    else if (jmlHari(DP.dari, s) > MAX_HARI) { toast('Maksimal ' + MAX_HARI + ' hari per peminjaman'); return; }
+    else { DP.sampai = s; DP.tahap = 0; dpTxt(); dpRender(); setTimeout(() => { dpClose(); cekRuang(); }, 250); return; }
+    dpTxt(); dpRender();
+  });
+  document.addEventListener('click', e => { if (!e.target.closest('.dp')) dpClose(); });
+  dpTxt();
+
+  // ---- hasil cek ----
+  let RU = { ruang: [] }, Q = null;
+  async function renderRuang() { cekRuang(); }
+  async function cekRuang() {
+    if ($('rSelesai').value <= $('rMulai').value) { toast('Jam selesai harus setelah jam mulai'); return; }
+    Q = { dari: DP.dari, sampai: DP.sampai, mulai: $('rMulai').value, selesai: $('rSelesai').value };
+    $('rInfo').textContent = rentang(Q.dari, Q.sampai) + ' · ' + Q.mulai + '–' + Q.selesai;
+    $('rList').innerHTML = '<div class="empty">Mengecek ketersediaan…</div>';
+    try { RU = await APP.call('ruangCek', [Q]); } catch (e) { $('rList').innerHTML = errBox(e); return; }
+    const ada = RU.ruang.filter(r => r.tersedia).length;
+    $('rInfo').textContent = ada + ' dari ' + RU.ruang.length + ' ruang tersedia · ' + rentang(Q.dari, Q.sampai) + ' · ' + Q.mulai + '–' + Q.selesai;
+    $('rList').innerHTML = RU.ruang.map((r, i) =>
+      '<div class="room"><div class="r"><div><b>' + esc(r.nama) + '</b><small>' + esc(r.lokasi) + (r.kapasitas ? ' · ' + esc(r.kapasitas) + ' orang' : '') + (r.fasilitas ? ' · ' + esc(r.fasilitas) : '') + '</small></div>' +
+      (r.tersedia ? '<span class="badge ok">Tersedia</span>' : '<span class="badge tolak">Terpakai</span>') + '</div>' +
+      r.jadwal.map(b => '<div class="bk rk' + (b.bentrok ? ' bt' : '') + '"><div class="jam">' + esc(b.mulai) + '–' + esc(b.selesai) + '<small style="display:block;font-weight:400;color:var(--muted);font-size:11.5px">' + esc(rentang(b.tanggal, b.sampai)) + '</small></div>' +
+        '<div class="m">' + (b.acara ? esc(b.acara) : '<i>Terpakai</i>') +
+        (b.nama ? '<small>' + esc(b.nama) + (b.unit ? ' · ' + esc(b.unit) : '') + (b.peserta ? ' · ' + esc(b.peserta) + ' orang' : '') + '</small>' : '') +
+        (b.tataLetak ? '<div class="det">Tata letak <b>' + esc(b.tataLetak) + '</b> · Konsumsi <b>' + esc(b.konsumsi) + (b.menu ? ' (' + esc(b.menu) + ')' : '') + '</b>' +
+          (b.perlengkapan ? ' · Perlengkapan <b>' + esc(b.perlengkapan) + '</b>' : '') + (b.hp ? ' · HP <a href="tel:' + esc(b.hp) + '">' + esc(b.hp) + '</a>' : '') + (b.catatan ? '<br>Catatan: ' + esc(b.catatan) : '') + '</div>' : '') +
+        '<div class="acts">' + badge(b.status) + (isAdmin() && b.status === 'Menunggu' ? '<button type="button" data-proses="' + esc(b.id) + '">Proses</button>' : '') +
+        (((isMine(b) && !isGuest()) || isAdmin()) ? '<button class="sec" type="button" data-batal="' + esc(b.id) + '">Batal</button>' : '') + '</div></div></div>').join('') +
+      (r.tersedia ? '<button class="pin" type="button" data-pesan="' + i + '">Pesan ruang ini →</button>'
+        : '<div class="det" style="margin-top:8px">Bentrok di jam/tanggal yang dipilih. Ubah jam atau tanggal, lalu cek lagi.</div>') + '</div>'
+    ).join('') || '<div class="empty">Belum ada data ruang. Isi sheet "DaftarRuang" di spreadsheet.</div>';
+  }
+  $('rCek').addEventListener('click', cekRuang);
+  $('btnReloadR').addEventListener('click', cekRuang);
+
+  function formRuang(r) {
+    const q = Q;
+    openForm('Pinjam ruang', 'Diproses admin Umum',
+      '<div class="pick"><b>' + esc(r.nama) + '</b>' + esc(rentang(q.dari, q.sampai)) + '<br>Jam ' + esc(q.mulai) + '–' + esc(q.selesai) + (q.dari !== q.sampai ? ' setiap hari' : '') +
+      '<br><button type="button" class="sec" id="f_ubah">Ubah ruang / tanggal</button></div>' +
+      '<input type="hidden" name="ruang" value="' + esc(r.nama) + '"><input type="hidden" name="tanggal" value="' + q.dari + '"><input type="hidden" name="sampai" value="' + q.sampai + '">' +
+      '<input type="hidden" name="mulai" value="' + q.mulai + '"><input type="hidden" name="selesai" value="' + q.selesai + '">' +
       namaField() +
-      '<div class="fsec">Ruang & waktu</div>' +
-      '<label for="f_r">Ruang</label><select id="f_r" name="ruang">' + RU.ruang.map(r => '<option value="' + esc(r.nama) + '"' + (r.nama === nama ? ' selected' : '') + '>' + esc(r.nama) + (r.kapasitas ? ' (' + esc(r.kapasitas) + ' org)' : '') + '</option>').join('') + '</select>' +
-      '<label for="f_t">Tanggal</label><input id="f_t" name="tanggal" type="date" min="' + today() + '" value="' + esc(t) + '" required data-l="Tanggal">' +
-      '<div class="two"><div><label for="f_m">Mulai</label><input id="f_m" name="mulai" type="time" value="09:00" step="900" required data-l="Jam mulai"></div>' +
-      '<div><label for="f_s">Selesai</label><input id="f_s" name="selesai" type="time" value="12:00" step="900" required data-l="Jam selesai"></div></div>' +
+      '<div class="fsec">Acara</div>' +
       '<label for="f_a">Nama acara / keperluan</label><input id="f_a" name="acara" required data-l="Acara" placeholder="mis. Rapat koordinasi bulanan">' +
-      '<label for="f_p">Jumlah peserta / tamu</label><input id="f_p" name="peserta" type="number" min="1" inputmode="numeric" required data-l="Jumlah peserta">' +
+      '<label for="f_p">Jumlah peserta / tamu' + (r.kapasitas ? ' (kapasitas ' + esc(r.kapasitas) + ')' : '') + '</label><input id="f_p" name="peserta" type="number" min="1" inputmode="numeric" required data-l="Jumlah peserta">' +
       '<div class="fsec">Konsumsi</div>' +
       chips('konsumsi', 'radio', ['Tidak ada', 'Disiapkan Umum', 'Dari eksternal'], 'Tidak ada') +
       '<div id="f_menuBox" class="hidden"><label>Jenis konsumsi (boleh lebih dari satu)</label>' + chips('menu', 'checkbox', ['Kopi/Teh', 'Snack', 'Makan']) + '</div>' +
@@ -242,28 +301,25 @@
       '<label>Perlengkapan (opsional)</label>' + chips('perlengkapan', 'checkbox', ['TV / proyektor', 'Sound & mic', 'Zoom / vicon', 'Backdrop / banner']) +
       '<label for="f_c">Catatan (opsional)</label><textarea id="f_c" name="catatan" placeholder="mis. makan siang 25 kotak, 2 peserta vegetarian"></textarea>',
       async d => {
-        if (d.mulai >= d.selesai) throw new Error('Jam selesai harus setelah jam mulai.');
         if (!d.tataLetak) throw new Error('Pilih tata letak ruangan.');
         if (d.konsumsi !== 'Tidak ada' && !d.menu) throw new Error('Pilih jenis konsumsi: kopi/teh, snack, dan/atau makan.');
         if (d.konsumsi === 'Tidak ada') d.menu = '';
-        const r = await APP.call('ruangBook', [d]);
-        if (isGuest() && r && r.id) addGuestId(r.id);
-        toast('Permintaan terkirim · menunggu persetujuan Umum', 3500); $('rTgl').value = d.tanggal; renderRuang();
+        const res = await APP.call('ruangBook', [d]);
+        if (isGuest() && res && res.id) addGuestId(res.id);
+        toast('Permintaan terkirim · menunggu persetujuan Umum', 3500); cekRuang();
       });
+    $('f_ubah').addEventListener('click', closeForm);
     $('fForm').querySelectorAll('input[name="konsumsi"]').forEach(el => el.addEventListener('change', () => {
       $('f_menuBox').classList.toggle('hidden', $('fForm').querySelector('input[name="konsumsi"]:checked').value === 'Tidak ada');
     }));
   }
-  $('rTgl').addEventListener('change', renderRuang);
-  $('rBaru').addEventListener('click', () => formRuang());
-  $('btnReloadR').addEventListener('click', renderRuang);
   $('rList').addEventListener('click', async e => {
-    const p = e.target.closest('[data-pinjam]'); if (p) return formRuang(RU.ruang[p.dataset.pinjam].nama);
+    const p = e.target.closest('[data-pesan]'); if (p) return formRuang(RU.ruang[p.dataset.pesan]);
     const pr = e.target.closest('[data-proses]'); if (pr) return formStatus('ruang', pr.dataset.proses, ['Disetujui', 'Ditolak'], false);
     const b = e.target.closest('[data-batal]'); if (!b) return;
     if (!confirm('Batalkan peminjaman ruang ini?')) return;
     b.disabled = true;
-    try { await APP.call('ruangBatal', [b.dataset.batal]); toast('Peminjaman dibatalkan'); renderRuang(); }
+    try { await APP.call('ruangBatal', [b.dataset.batal]); toast('Peminjaman dibatalkan'); cekRuang(); }
     catch (err) { toast(err.message); b.disabled = false; }
   });
 
@@ -279,21 +335,74 @@
   // ---------- BBM ----------
   let BB = [];
   async function renderBbm() {
-    $('bInfo').textContent = isAdmin() ? 'Semua pengajuan (admin)' : 'Riwayat pengajuan saya';
+    $('bInfo').textContent = isAdmin() ? 'Semua pengajuan (admin)' : 'Riwayat pengajuan ' + ((LOGIN && LOGIN.nama) || 'saya');
     $('bList').innerHTML = '<div class="empty">Memuat…</div>';
     try { BB = await APP.call('bbmList', []); } catch (e) { $('bList').innerHTML = errBox(e); return; }
     $('bList').innerHTML = BB.length ? BB.map(r =>
       '<div class="it"><div class="m"><b>' + esc(r.jenis) + ' · ' + esc(r.liter) + ' L · ' + esc(r.nopol) + '</b><small>' + (isAdmin() || !isMine(r) ? esc(r.nama) + ' · ' : '') + esc(tgl(r.waktu)) + '</small>' +
       '<div class="x">' + esc(r.keperluan) + (r.kupon ? ' · <b>Kupon ' + esc(r.kupon) + '</b>' : '') + (r.catatan ? ' · ' + esc(r.catatan) : '') + '</div>' +
+      (r.km || r.foto ? '<div class="x">' + (r.km ? 'KM ' + esc(Number(r.km).toLocaleString('id-ID')) : '') + (/^https:\/\//.test(r.foto || '') ? ' · <a href="' + esc(r.foto) + '" target="_blank" rel="noopener">📷 Foto KM</a>' : '') + '</div>' : '') +
       (isAdmin() && r.status === 'Menunggu' ? '<div class="acts"><button type="button" data-st="' + esc(r.id) + '">Proses</button></div>' : '') + '</div>' + badge(r.status) + '</div>').join('')
       : '<div class="empty">Belum ada pengajuan kupon BBM.</div>';
   }
-  $('bBaru').addEventListener('click', () => openForm('Ajukan kupon BBM', 'Kendaraan dinas', 
-    '<label for="f_n">Nomor polisi</label><input id="f_n" name="nopol" required data-l="Nomor polisi" placeholder="DR 1234 AB" autocapitalize="characters">' +
-    '<div class="two"><div><label for="f_j">Jenis BBM</label><select id="f_j" name="jenis"><option>Pertalite</option><option>Pertamax</option><option>Dexlite</option><option>Pertamina Dex</option><option>Solar</option></select></div>' +
-    '<div><label for="f_l">Liter</label><input id="f_l" name="liter" type="number" min="1" inputmode="numeric" required data-l="Liter"></div></div>' +
-    '<label for="f_k">Keperluan</label><textarea id="f_k" name="keperluan" required data-l="Keperluan" placeholder="Tujuan perjalanan / kegiatan"></textarea>',
-    async d => { if (!(Number(d.liter) > 0)) throw new Error('Jumlah liter tidak valid.'); await APP.call('bbmAdd', [d]); toast('Pengajuan kupon terkirim'); renderBbm(); }));
+  // ---- kamera dalam aplikasi: foto KM hanya dari kamera langsung (tanpa galeri), diberi cap waktu ----
+  let camStream = null, kmFoto = null;
+  async function bukaKamera() {
+    $('camMsg').textContent = 'Memulai kamera…'; $('camShot').disabled = true;
+    $('camView').classList.remove('hidden'); document.body.style.overflow = 'hidden';
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Browser ini tidak mendukung kamera. Buka aplikasi di Chrome HP.');
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+      $('camVid').srcObject = camStream; await $('camVid').play();
+      $('camMsg').textContent = 'Arahkan ke angka KM / odometer, pastikan terbaca jelas.'; $('camShot').disabled = false;
+    } catch (e) {
+      $('camMsg').textContent = /Permission|NotAllowed/i.test(e.name + e.message) ? 'Izin kamera ditolak. Izinkan kamera untuk situs ini di pengaturan browser.' : (e.message || 'Kamera tidak bisa dibuka.');
+    }
+  }
+  function tutupKamera() {
+    if (camStream) camStream.getTracks().forEach(t => t.stop()); camStream = null;
+    $('camVid').srcObject = null; $('camView').classList.add('hidden');
+    if ($('fSheet').classList.contains('hidden')) document.body.style.overflow = '';
+  }
+  function ambilFoto() {
+    const v = $('camVid'); if (!v.videoWidth) return;
+    const sk = Math.min(1, 1280 / Math.max(v.videoWidth, v.videoHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(v.videoWidth * sk); c.height = Math.round(v.videoHeight * sk);
+    const g = c.getContext('2d'); g.drawImage(v, 0, 0, c.width, c.height);
+    // cap: nama, waktu & nopol, agar foto tidak bisa dipakai ulang
+    const d = new Date(), fs = Math.max(14, Math.round(c.width / 40));
+    const cap = [(LOGIN && LOGIN.nama) || '', HARI[d.getDay()] + ' ' + tgl(ymd(d)) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' WITA', ($('f_n') && $('f_n').value.toUpperCase()) || ''].filter(String).join(' · ');
+    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, c.height - fs * 2, c.width, fs * 2);
+    g.fillStyle = '#ffd400'; g.font = '700 ' + fs + 'px sans-serif'; g.textBaseline = 'middle'; g.fillText(cap, fs * .6, c.height - fs);
+    const url = c.toDataURL('image/jpeg', .8);
+    kmFoto = { b64: url.split(',')[1], waktu: Date.now() };
+    $('kmImg').src = url; $('kmImg').classList.remove('hidden'); $('kmBtn').textContent = '📷 Ulangi foto'; $('kmHint').textContent = 'Foto diambil ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + '. Pastikan angka KM terbaca.';
+    tutupKamera();
+  }
+  $('camShot').addEventListener('click', ambilFoto);
+  $('camClose').addEventListener('click', tutupKamera);
+
+  $('bBaru').addEventListener('click', () => {
+    kmFoto = null;
+    openForm('Ajukan kupon BBM', 'Kendaraan dinas',
+      '<label for="f_n">Nomor polisi</label><input id="f_n" name="nopol" required data-l="Nomor polisi" placeholder="DR 1234 AB" autocapitalize="characters">' +
+      '<div class="two"><div><label for="f_j">Jenis BBM</label><select id="f_j" name="jenis"><option>Pertalite</option><option>Pertamax</option><option>Dexlite</option><option>Pertamina Dex</option><option>Solar</option></select></div>' +
+      '<div><label for="f_l">Liter</label><input id="f_l" name="liter" type="number" min="1" inputmode="numeric" required data-l="Liter"></div></div>' +
+      '<div class="fsec">KM / odometer hari ini</div>' +
+      '<label for="f_km">Angka KM</label><input id="f_km" name="km" type="number" min="1" inputmode="numeric" required data-l="Angka KM" placeholder="mis. 45210">' +
+      '<label>Foto KM / MID (wajib, langsung dari kamera)</label>' +
+      '<div class="kmBox"><img id="kmImg" class="hidden" alt="Foto KM"><button type="button" class="sec" id="kmBtn">📷 Ambil foto KM</button>' +
+      '<div class="hint" id="kmHint">Foto dari galeri tidak bisa dipakai. Foto diberi cap nama & waktu otomatis.</div></div>' +
+      '<label for="f_k">Keperluan</label><textarea id="f_k" name="keperluan" required data-l="Keperluan" placeholder="Tujuan perjalanan / kegiatan"></textarea>',
+      async d => {
+        if (!(Number(d.liter) > 0)) throw new Error('Jumlah liter tidak valid.');
+        if (!kmFoto) throw new Error('Ambil foto KM / odometer dulu.');
+        if (Date.now() - kmFoto.waktu > 30 * 60 * 1000) { kmFoto = null; throw new Error('Foto KM lebih dari 30 menit. Ambil ulang foto.'); }
+        d.foto = { b64: kmFoto.b64 };
+        await APP.call('bbmAdd', [d]); kmFoto = null; toast('Pengajuan kupon terkirim'); renderBbm();
+      });
+    $('kmBtn').addEventListener('click', bukaKamera);
+  });
   $('btnReloadB').addEventListener('click', renderBbm);
   $('bList').addEventListener('click', e => { const b = e.target.closest('[data-st]'); if (b) formStatus('bbm', b.dataset.st, ['Disetujui', 'Ditolak'], true); });
 
@@ -307,7 +416,7 @@
     r.onerror = () => no(new Error('Gagal membaca ' + f.name)); r.readAsDataURL(f);
   });
   async function renderSppd() {
-    $('sInfo').textContent = isAdmin() ? 'Semua laporan (admin)' : 'Laporan saya';
+    $('sInfo').textContent = isAdmin() ? 'Semua laporan (admin)' : 'Laporan ' + ((LOGIN && LOGIN.nama) || 'saya');
     $('sList').innerHTML = '<div class="empty">Memuat…</div>';
     try { SP = await APP.call('sppdList', []); } catch (e) { $('sList').innerHTML = errBox(e); return; }
     $('sList').innerHTML = SP.length ? SP.map(r => {

@@ -19,13 +19,14 @@
       { nama: 'Aula', kapasitas: '80', lokasi: 'Gedung Serbaguna', fasilitas: 'Panggung, sound, proyektor' }],
     pinjam: [
       { id: 'RU1', waktu: T + ' 07:10', nip: '7293084H', nama: 'ARSAD MOHAMAD', unit: 'BAG OP DAN HAR KIT', hp: '', ruang: 'Ruang Rapat Utama', tanggal: T, mulai: '09:00', selesai: '11:00', acara: 'Rapat evaluasi pembangkit', peserta: '12', konsumsi: 'Disiapkan Umum', menu: 'Kopi/Teh, Snack', tataLetak: 'Meja rapat', perlengkapan: 'TV / proyektor', catatan: '', status: 'Disetujui' },
-      { id: 'RU2', waktu: T + ' 08:30', nip: 'GUEST', nama: 'Rahman', unit: 'Dinas ESDM NTB', hp: '081300000009', ruang: 'Aula', tanggal: T1, mulai: '08:00', selesai: '12:00', acara: 'Sosialisasi K3', peserta: '45', konsumsi: 'Dari eksternal', menu: 'Snack, Makan', tataLetak: 'Teater + panggung', perlengkapan: 'Sound & mic', catatan: '', status: 'Menunggu' }],
+      { id: 'RU2', waktu: T + ' 08:30', nip: 'GUEST', nama: 'Rahman', unit: 'Dinas ESDM NTB', hp: '081300000009', ruang: 'Aula', tanggal: T1, sampai: ymd(new Date(Date.now() + 3 * 864e5)), mulai: '08:00', selesai: '12:00', acara: 'Sosialisasi K3', peserta: '45', konsumsi: 'Dari eksternal', menu: 'Snack, Makan', tataLetak: 'Teater + panggung', perlengkapan: 'Sound & mic', catatan: '', status: 'Menunggu' }],
     bbm: [
-      { id: 'BB1', waktu: T + ' 07:45', nip: '7293084H', nama: 'ARSAD MOHAMAD', unit: 'BAG OP DAN HAR KIT', nopol: 'DR 1234 AB', jenis: 'Dexlite', liter: '30', keperluan: 'Patroli lokasi PLTD', status: 'Menunggu', kupon: '', catatan: '' }],
+      { id: 'BB1', waktu: T + ' 07:45', nip: '7293084H', nama: 'ARSAD MOHAMAD', unit: 'BAG OP DAN HAR KIT', nopol: 'DR 1234 AB', jenis: 'Dexlite', liter: '30', km: '45210', keperluan: 'Patroli lokasi PLTD', status: 'Menunggu', kupon: '', catatan: '' }],
     sppd: []
   };
   let n = 10;
   const aktif = s => !/batal|tolak/i.test(s);
+  const kena = (r, a, b) => r.tanggal <= b && (r.sampai || r.tanggal) >= a;
   const wait = v => new Promise(r => setTimeout(() => r(JSON.parse(JSON.stringify(v))), 250));
   const fail = m => Promise.reject(new Error(m));
   APP.mock = function (fn, args, pin) {
@@ -38,7 +39,7 @@
     const d = args[0] || {}, own = r => u.nip && r.nip === u.nip;
     const out = (r, full) => {
       const boleh = full || u.admin || own(r);
-      const o = { id: r.id, ruang: r.ruang, tanggal: r.tanggal, mulai: r.mulai, selesai: r.selesai, status: r.status, milik: !!own(r) };
+      const o = { id: r.id, ruang: r.ruang, tanggal: r.tanggal, sampai: r.sampai || r.tanggal, mulai: r.mulai, selesai: r.selesai, status: r.status, milik: !!own(r) };
       if (u.mode !== 'guest' || boleh) Object.assign(o, { nama: r.nama, unit: r.unit, acara: r.acara, peserta: r.peserta });
       if (boleh) Object.assign(o, { hp: r.hp, konsumsi: r.konsumsi, menu: r.menu, tataLetak: r.tataLetak, perlengkapan: r.perlengkapan, catatan: r.catatan });
       return o;
@@ -55,19 +56,27 @@
           bbmMenunggu: db.bbm.filter(r => (u.admin || own(r)) && r.status === 'Menunggu').length, pegawai: db.peg.length, recent: rec });
       }
       case 'pegawai': return wait(db.peg.map(p => ({ nama: p.nama, unit: p.unit, jabatan: p.jabatan, foto: '' })));
-      case 'ruangList': return wait({ ruang: db.ruang, booking: db.pinjam.filter(r => r.tanggal === (args[0] || T) && aktif(r.status)).map(r => out(r)).sort((a, b) => a.mulai.localeCompare(b.mulai)) });
+      case 'ruangList': return wait({ ruang: db.ruang, booking: db.pinjam.filter(r => kena(r, args[0] || T, args[0] || T) && aktif(r.status)).map(r => out(r)).sort((a, b) => a.mulai.localeCompare(b.mulai)) });
+      case 'ruangCek': {
+        const q = d; if (q.dari < T) return fail('Tanggal sudah lewat.');
+        return wait({ ruang: db.ruang.map(r => {
+          const jadwal = db.pinjam.filter(b => b.ruang === r.nama && aktif(b.status) && kena(b, q.dari, q.sampai))
+            .map(b => Object.assign(out(b), { bentrok: q.mulai < b.selesai && q.selesai > b.mulai }));
+          return Object.assign({}, r, { tersedia: !jadwal.some(j => j.bentrok), jadwal: jadwal });
+        }) });
+      }
       case 'ruangStatus': return wait(db.pinjam.filter(r => (args[0] || []).indexOf(r.id) >= 0).map(r => out(r, true)));
       case 'ruangBook': {
         if (d.tanggal < T) return fail('Tanggal sudah lewat.');
-        const b = db.pinjam.find(r => r.ruang === d.ruang && r.tanggal === d.tanggal && aktif(r.status) && d.mulai < r.selesai && d.selesai > r.mulai);
-        if (b) return fail('Bentrok dengan jadwal ' + b.mulai + '–' + b.selesai + '. Pilih jam atau ruang lain.');
+        const b = db.pinjam.find(r => r.ruang === d.ruang && kena(r, d.tanggal, d.sampai || d.tanggal) && aktif(r.status) && d.mulai < r.selesai && d.selesai > r.mulai);
+        if (b) return fail('Bentrok dengan jadwal ' + b.mulai + '–' + b.selesai + '. Cek ketersediaan lagi.');
         const g = u.mode === 'guest';
         db.pinjam.push(Object.assign({}, d, { id: 'RU' + (++n), waktu: now(), nip: g ? 'GUEST' : u.nip, nama: g ? d.nama : u.nama, unit: g ? d.unit : u.unit, status: 'Menunggu' }));
         return wait({ id: 'RU' + n });
       }
       case 'ruangBatal': { const r = db.pinjam.find(x => x.id === args[0]); if (r) r.status = 'Batal'; return wait(true); }
       case 'bbmList': return wait(db.bbm.filter(r => u.admin || own(r)).slice().reverse());
-      case 'bbmAdd': db.bbm.push(Object.assign({}, d, { nip: u.nip, nama: u.nama, unit: u.unit, nopol: String(d.nopol).toUpperCase(), id: 'BB' + (++n), waktu: now(), status: 'Menunggu', kupon: '', catatan: '' })); return wait({ id: 'BB' + n });
+      case 'bbmAdd': if (!d.foto) return fail('Foto KM wajib.'); db.bbm.push(Object.assign({}, d, { foto: '',  nip: u.nip, nama: u.nama, unit: u.unit, nopol: String(d.nopol).toUpperCase(), id: 'BB' + (++n), waktu: now(), status: 'Menunggu', kupon: '', catatan: '' })); return wait({ id: 'BB' + n });
       case 'sppdList': return wait(db.sppd.filter(r => u.admin || own(r)).slice().reverse());
       case 'sppdAdd': db.sppd.push(Object.assign({}, d, { nip: u.nip, nama: u.nama, unit: u.unit, files: undefined, lampiran: (d.files || []).map(f => '(demo) ' + f.name).join('\n'), id: 'SP' + (++n), waktu: now(), status: 'Menunggu', catatan: '' })); return wait({ id: 'SP' + n });
       case 'setStatus': {
